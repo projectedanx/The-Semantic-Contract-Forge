@@ -67,3 +67,67 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         throw new Error("An unknown error occurred during API validation.");
     }
 }
+
+/**
+ * Generates a structured Role object (name and description) from a natural language description.
+ *
+ * @param {string} roleDescription - A user-provided description of the desired AI persona.
+ * @returns {Promise<{ name: string; description: string }>} A promise that resolves to the generated role object.
+ * @throws {Error} Throws an error if the Gemini API call fails or the response is not as expected.
+ */
+export async function generateRole(roleDescription: string): Promise<{ name: string; description: string }> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    const roleSchema = {
+        type: "object",
+        properties: {
+            name: {
+                type: "string",
+                description: "A concise, descriptive name for the role, suitable for a dropdown list (e.g., 'Senior UX Designer')."
+            },
+            description: {
+                type: "string",
+                description: "A detailed, professional description of the role's expertise and responsibilities, written in the third person."
+            }
+        },
+        required: ["name", "description"]
+    };
+
+    const prompt = `
+        Analyze the following user request for an AI persona and generate a structured role object from it.
+        The 'name' should be a short, professional title.
+        The 'description' should be a detailed explanation of the persona's skills and focus.
+
+        USER REQUEST: "${roleDescription}"
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: roleSchema as any,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const parsedRole = JSON.parse(jsonText);
+
+        if (typeof parsedRole.name !== 'string' || typeof parsedRole.description !== 'string') {
+            throw new Error("API returned an invalid role structure.");
+        }
+
+        return parsedRole;
+
+    } catch (error) {
+        loggingService.error("Gemini Role Generation Error", error, { description: roleDescription });
+        if (error instanceof Error) {
+            if (error.message.includes('API_KEY')) {
+                throw new Error(`Gemini API Error: Invalid or missing API Key.`);
+            }
+            throw new Error(`Gemini API Error: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during role generation.");
+    }
+}
