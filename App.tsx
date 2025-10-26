@@ -5,7 +5,7 @@ import TierSelector from './components/TierSelector';
 import PromptEditor from './components/PromptEditor';
 import GeneratedPrompt from './components/GeneratedPrompt';
 import ErrorToast from './components/ErrorToast';
-import { Tier, PromptData, ValidationResult, SavedPromptContract, PromptTemplate } from './types';
+import { Tier, PromptData, ValidationResult, SavedPromptContract, PromptTemplate, Role } from './types';
 import { ROLES } from './constants';
 import { generatePromptText } from './utils/promptGenerator';
 import { validatePromptOutput } from './services/geminiService';
@@ -78,6 +78,7 @@ function App() {
   const [userError, setUserError] = useState<string | null>(null);
   const [activeContract, setActiveContract] = useState<SavedPromptContract | null>(null);
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
+  const [roles, setRoles] = useState<Role[]>(ROLES);
 
   const { contracts, saveContract, deleteContract } = useLocalStorageContracts(setUserError);
   const { templates, saveTemplate, renameTemplate, deleteTemplate } = useLocalStorageTemplates(setUserError);
@@ -152,10 +153,16 @@ function App() {
     setPromptData(prev => ({
         ...INITIAL_PROMPT_DATA,
         ...template.prompt,
-        role: template.prompt.role || ROLES[0],
+        role: template.prompt.role || roles[0],
     }));
     setActiveContract(null);
     setIsTemplateLibraryOpen(false);
+  };
+
+  const handleRoleGenerated = (newRole: Role) => {
+    const updatedRoles = [newRole, ...roles];
+    setRoles(updatedRoles);
+    setPromptData(prev => ({ ...prev, role: newRole }));
   };
   
   return (
@@ -179,6 +186,8 @@ function App() {
                 promptData={promptData}
                 setPromptData={setPromptData}
                 currentTier={currentTier}
+                roles={roles}
+                onRoleGenerated={handleRoleGenerated}
               />
               <GeneratedPrompt
                 promptText={generatedPromptText}
