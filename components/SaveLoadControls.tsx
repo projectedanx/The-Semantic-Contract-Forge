@@ -9,15 +9,17 @@ import { AppContext } from '../App';
 interface SaveLoadControlsProps {
     contracts: SavedPromptContract[];
     activeContract: SavedPromptContract | null;
-    onSave: (promptData: PromptData, id: string | null, name: string) => SavedPromptContract;
+    onSave: (promptData: PromptData, id:string | null, name: string) => SavedPromptContract;
     onLoad: (contract: SavedPromptContract) => void;
     onDelete: (id: string) => void;
     onNew: () => void;
     promptData: PromptData;
+    onSaveTemplate: (promptData: PromptData, name: string) => void;
 }
 
-const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeContract, onSave, onLoad, onDelete, onNew, promptData }) => {
+const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeContract, onSave, onLoad, onDelete, onNew, promptData, onSaveTemplate }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+    const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [contractToDelete, setContractToDelete] = useState<string | null>(null);
     const [contractName, setContractName] = useState('');
@@ -43,6 +45,18 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         if (contractName.trim()) {
             onSave(promptData, null, contractName.trim());
             setIsSaveModalOpen(false);
+        }
+    };
+
+    const handleSaveTemplateClick = () => {
+        setContractName(''); // Reset name for template
+        setIsTemplateModalOpen(true);
+    };
+
+    const handleConfirmSaveTemplate = () => {
+        if (contractName.trim()) {
+            onSaveTemplate(promptData, contractName.trim());
+            setIsTemplateModalOpen(false);
         }
     };
     
@@ -96,6 +110,13 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
                 <button onClick={handleSaveClick} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-md transition font-semibold">
                     {activeContract ? 'Save' : 'Save As...'}
                 </button>
+                <button
+                    onClick={handleSaveTemplateClick}
+                    className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md transition font-semibold"
+                    title="Save the current contract as a reusable template"
+                >
+                    Save as Template
+                </button>
                  {activeContract && (
                     <button
                         onClick={() => handleDeleteClick(activeContract.id)}
@@ -123,6 +144,27 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
                         <div className="mt-6 flex justify-end space-x-4">
                         <button onClick={() => setIsSaveModalOpen(false)} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md transition font-semibold">Cancel</button>
                         <button onClick={handleConfirmSave} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-md transition font-semibold" disabled={!contractName.trim()}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Save Template Modal */}
+            {isTemplateModalOpen && (
+                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" aria-modal="true" role="dialog">
+                    <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-6 w-full max-w-md m-4">
+                        <h2 className="text-xl font-bold text-slate-100">Save New Template</h2>
+                        <p className="text-slate-400 mt-2">Enter a name for your new template.</p>
+                        <input
+                            type="text"
+                            value={contractName}
+                            onChange={(e) => setContractName(e.target.value)}
+                            className="w-full mt-4 p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
+                            placeholder="e.g., Python FastAPI Endpoint"
+                        />
+                        <div className="mt-6 flex justify-end space-x-4">
+                        <button onClick={() => setIsTemplateModalOpen(false)} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md transition font-semibold">Cancel</button>
+                        <button onClick={handleConfirmSaveTemplate} className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-md transition font-semibold" disabled={!contractName.trim()}>Save Template</button>
                         </div>
                     </div>
                 </div>

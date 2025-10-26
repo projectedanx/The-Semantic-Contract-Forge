@@ -57,7 +57,7 @@ function App() {
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
 
   const { contracts, saveContract, deleteContract } = useLocalStorageContracts(setUserError);
-  const { templates } = useLocalStorageTemplates(setUserError);
+  const { templates, saveTemplate, renameTemplate, deleteTemplate } = useLocalStorageTemplates(setUserError);
   
   const generatedPromptText = useMemo(() => generatePromptText(promptData, currentTier), [promptData, currentTier]);
   
@@ -97,6 +97,18 @@ function App() {
     }
   }, [saveContract]);
 
+  const handleSaveTemplate = useCallback((data: PromptData, name: string): PromptTemplate => {
+    try {
+      const saved = saveTemplate(data, name);
+      // Maybe show a confirmation toast?
+      return saved;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to save template.";
+      setUserError(message);
+      throw e;
+    }
+  }, [saveTemplate]);
+
   const handleLoad = useCallback((contract: SavedPromptContract) => {
     setPromptData(contract);
     setActiveContract(contract);
@@ -134,6 +146,7 @@ function App() {
           onDelete={handleDelete}
           onNew={handleNew}
           promptData={promptData}
+          onSaveTemplate={handleSaveTemplate}
         />
         <main className="container mx-auto p-4 md:p-8">
           <div className="space-y-8">
@@ -160,6 +173,8 @@ function App() {
           onSelect={handleTemplateSelect}
           templates={templates}
           currentTier={currentTier}
+          onRenameTemplate={renameTemplate}
+          onDeleteTemplate={deleteTemplate}
         />
         <ErrorToast message={userError} onDismiss={() => setUserError(null)} />
       </div>

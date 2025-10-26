@@ -11,6 +11,7 @@ interface HeaderProps {
     onDelete: (id: string) => void;
     onNew: () => void;
     promptData: PromptData;
+    onSaveTemplate: (promptData: PromptData, name: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = (props) => {
