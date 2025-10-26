@@ -6,6 +6,18 @@ import { TrashIcon } from './icons/TrashIcon';
 import { LibraryIcon } from './icons/LibraryIcon';
 import { AppContext } from '../App';
 
+/**
+ * @interface SaveLoadControlsProps
+ * @description Props for the SaveLoadControls component.
+ * @property {SavedPromptContract[]} contracts - The list of saved prompt contracts.
+ * @property {SavedPromptContract | null} activeContract - The currently active/loaded contract.
+ * @property {(promptData: PromptData, id: string | null, name: string) => SavedPromptContract} onSave - Function to save a new or existing contract.
+ * @property {(contract: SavedPromptContract) => void} onLoad - Function to load a contract.
+ * @property {(id: string) => void} onDelete - Function to delete a contract.
+ * @property {() => void} onNew - Function to clear the form for a new contract.
+ * @property {PromptData} promptData - The current data in the prompt editor.
+ * @property {(promptData: PromptData, name: string) => void} onSaveTemplate - Function to save the current prompt data as a new template.
+ */
 interface SaveLoadControlsProps {
     contracts: SavedPromptContract[];
     activeContract: SavedPromptContract | null;
@@ -17,6 +29,13 @@ interface SaveLoadControlsProps {
     onSaveTemplate: (promptData: PromptData, name: string) => void;
 }
 
+/**
+ * @component SaveLoadControls
+ * @description A component that provides UI controls for saving, loading, deleting, and creating new prompt contracts and templates.
+ * It includes modals for user confirmation and input.
+ * @param {SaveLoadControlsProps} props - The props for the component.
+ * @returns {React.ReactElement} The rendered save/load controls.
+ */
 const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeContract, onSave, onLoad, onDelete, onNew, promptData, onSaveTemplate }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);

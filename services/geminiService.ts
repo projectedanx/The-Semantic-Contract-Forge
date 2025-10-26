@@ -5,6 +5,17 @@ import { loggingService } from './loggingService';
 
 // We assume `process.env.API_KEY` is available in the environment, as per project guidelines.
 
+/**
+ * Validates the output of a prompt against a JSON schema using the Gemini API.
+ * This function is only available for Pro and Enterprise tiers. It constructs a full prompt,
+ * sends it to the Gemini API with the specified schema, and returns the parsed JSON response.
+ *
+ * @param {PromptData} promptData - The data object for the prompt contract.
+ * @param {Tier} tier - The user's current tier.
+ * @returns {Promise<any>} A promise that resolves to the parsed JSON object from the API response.
+ * @throws {Error} Throws an error if the tier is not Pro or Enterprise, if the schema is invalid JSON,
+ * or if the Gemini API call fails.
+ */
 export async function validatePromptOutput(promptData: PromptData, tier: Tier): Promise<any> {
     if (tier !== 'pro' && tier !== 'enterprise') {
         throw new Error("JSON Schema validation is a Pro/Enterprise feature.");

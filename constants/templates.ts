@@ -2,6 +2,11 @@
 import { PromptTemplate } from '../types';
 import { ROLES } from '../constants';
 
+/**
+ * @const {PromptTemplate[]} TEMPLATES
+ * @description A list of built-in, pre-defined prompt templates available to all users.
+ * Each template provides a starting point for a common use case.
+ */
 export const TEMPLATES: PromptTemplate[] = [
   {
     id: 'template-react-component',

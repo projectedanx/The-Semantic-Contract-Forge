@@ -4,6 +4,17 @@ import { loggingService } from '../services/loggingService';
 
 const STORAGE_KEY = 'semantic-contract-forge-contracts';
 
+/**
+ * Custom hook for managing prompt contracts in the browser's local storage.
+ * It handles loading, saving, and deleting contracts, while also providing error handling.
+ *
+ * @param {(message: string | null) => void} setUserError - A callback function to set user-facing error messages.
+ * @returns {{
+ *   contracts: SavedPromptContract[],
+ *   saveContract: (contractToSave: PromptData, id: string | null, name: string) => SavedPromptContract,
+ *   deleteContract: (id: string) => void
+ * }} An object containing the list of contracts and functions to manage them.
+ */
 export function useLocalStorageContracts(
   setUserError: (message: string | null) => void
 ) {
@@ -21,6 +32,16 @@ export function useLocalStorageContracts(
     }
   }, [setUserError]);
 
+  /**
+   * Saves or updates a prompt contract in local storage.
+   * If an `id` is provided, it updates the existing contract. Otherwise, it creates a new one.
+   *
+   * @param {PromptData} contractToSave - The prompt data to be saved.
+   * @param {string | null} id - The ID of the contract to update, or null for a new contract.
+   * @param {string} name - The name of the contract.
+   * @returns {SavedPromptContract} The newly saved or updated contract.
+   * @throws {Error} If saving to localStorage fails.
+   */
   const saveContract = useCallback((contractToSave: PromptData, id: string | null, name: string): SavedPromptContract => {
     try {
       let newContract: SavedPromptContract = null!;
@@ -50,6 +71,12 @@ export function useLocalStorageContracts(
     }
   }, []);
 
+  /**
+   * Deletes a contract from local storage by its ID.
+   *
+   * @param {string} id - The ID of the contract to delete.
+   * @throws {Error} If deleting from localStorage fails.
+   */
   const deleteContract = useCallback((id: string) => {
     try {
       setContracts(prevContracts => {

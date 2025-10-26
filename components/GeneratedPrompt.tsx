@@ -4,6 +4,15 @@ import { CopyIcon } from './icons/CopyIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { ShieldCheckIcon } from './icons/ShieldCheckIcon';
 
+/**
+ * @interface GeneratedPromptProps
+ * @description Props for the GeneratedPrompt component.
+ * @property {string} promptText - The text of the generated prompt to be displayed.
+ * @property {() => Promise<void>} onValidate - Async function to be called when the user initiates a validation.
+ * @property {boolean} isLoading - Flag indicating if the validation process is currently in progress.
+ * @property {ValidationResult | null} validationResult - The result of the last validation, or null if no validation has been performed.
+ * @property {Tier} tier - The user's current tier, which determines if validation is available.
+ */
 interface GeneratedPromptProps {
   promptText: string;
   onValidate: () => Promise<void>;
@@ -12,6 +21,13 @@ interface GeneratedPromptProps {
   tier: Tier;
 }
 
+/**
+ * @component GeneratedPrompt
+ * @description A component that displays the generated prompt text, allows copying it to the clipboard,
+ * and provides a button to trigger validation of the prompt's output against a schema.
+ * @param {GeneratedPromptProps} props - The props for the component.
+ * @returns {React.ReactElement} The rendered component for displaying and validating the generated prompt.
+ */
 const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidate, isLoading, validationResult, tier }) => {
   const [copied, setCopied] = useState(false);
 

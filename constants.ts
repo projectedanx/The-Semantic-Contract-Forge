@@ -1,6 +1,11 @@
 
 import { Role } from './types';
 
+/**
+ * @const {Role[]} ROLES
+ * @description A list of pre-defined roles that the AI can assume.
+ * Each role has a name and a description that influences the AI's response style and expertise.
+ */
 export const ROLES: Role[] = [
   {
     name: 'Default Assistant',

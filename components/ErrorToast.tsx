@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { XCircleIcon } from './icons/XCircleIcon';
 
+/**
+ * @interface ErrorToastProps
+ * @description Props for the ErrorToast component.
+ * @property {string | null} message - The error message to display. If null, the toast is hidden.
+ * @property {() => void} onDismiss - Callback function to execute when the toast is dismissed.
+ */
 interface ErrorToastProps {
   message: string | null;
   onDismiss: () => void;
 }
 
+/**
+ * @component ErrorToast
+ * @description A toast notification component for displaying errors. It appears with an animation,
+ * stays for a set duration, and can be dismissed manually.
+ * @param {ErrorToastProps} props - The props for the component.
+ * @returns {React.ReactElement} The rendered toast component.
+ */
 const ErrorToast: React.FC<ErrorToastProps> = ({ message, onDismiss }) => {
   const [isVisible, setIsVisible] = useState(false);
 
