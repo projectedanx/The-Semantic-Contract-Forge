@@ -1,10 +1,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { PromptData, Tier, Role } from '../types';
-import { ROLES } from '../constants';
-import RoleGenerationModal from './RoleGenerationModal';
-import { generateRole } from '../services/geminiService';
 import { SparklesIcon } from './icons/SparklesIcon';
+import RoleGenerator from './RoleGenerator';
 
 /**
  * @interface PromptEditorProps
@@ -72,40 +70,35 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
 
   const isProOrEnterprise = currentTier === 'pro' || currentTier === 'enterprise';
   const isEnterprise = currentTier === 'enterprise';
-  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-
-  const handleRoleSuccess = (newRole: Role) => {
-    onRoleGenerated(newRole);
-    setIsRoleModalOpen(false); // Close modal on success
-  };
+  const [isRoleGeneratorVisible, setRoleGeneratorVisible] = useState(false);
 
   return (
-    <>
-      <div className="space-y-6 bg-slate-800/30 p-6 rounded-lg border border-slate-700">
-        <h2 className="text-2xl font-bold text-amber-300 border-b border-amber-300/20 pb-2">Prompt Contract Editor</h2>
+    <div className="space-y-6 bg-slate-800/30 p-6 rounded-lg border border-slate-700">
+      <h2 className="text-2xl font-bold text-amber-300 border-b border-amber-300/20 pb-2">Prompt Contract Editor</h2>
 
-        <Section title="Context" description="Set the background and scope for the AI.">
-          <TextArea name="context" value={promptData.context} onChange={handleChange} placeholder="e.g., You are building a component for an e-commerce dashboard..." />
-        </Section>
+      <Section title="Context" description="Set the background and scope for the AI.">
+        <TextArea name="context" value={promptData.context} onChange={handleChange} placeholder="e.g., You are building a component for an e-commerce dashboard..." />
+      </Section>
 
-        <Section title="Role" description="Assign a specific persona to the AI.">
-          <div className="flex gap-2">
-            <select name="role" value={promptData.role.name} onChange={handleChange} className="w-full p-2 bg-slate-800 border border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition">
-                {roles.map(role => <option key={role.name} value={role.name}>{role.name}</option>)}
-            </select>
-            <button
-              onClick={() => setIsRoleModalOpen(true)}
-              className="px-3 py-2 bg-amber-500/10 text-amber-300 rounded-md border border-amber-500/20 hover:bg-amber-500/20 transition-colors flex items-center gap-2"
-              title="Generate Role with AI"
-            >
-              <SparklesIcon className="w-5 h-5" />
-            </button>
-          </div>
-          <p className="text-xs text-slate-500 mt-2 p-2 bg-slate-900/50 rounded">{promptData.role.description}</p>
-        </Section>
+      <Section title="Role" description="Assign a specific persona to the AI.">
+        <div className="flex gap-2">
+          <select name="role" value={promptData.role.name} onChange={handleChange} className="w-full p-2 bg-slate-800 border border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition">
+            {roles.map(role => <option key={role.name} value={role.name}>{role.name}</option>)}
+          </select>
+          <button
+            onClick={() => setRoleGeneratorVisible(!isRoleGeneratorVisible)}
+            className="px-3 py-2 bg-amber-500/10 text-amber-300 rounded-md border border-amber-500/20 hover:bg-amber-500/20 transition-colors flex items-center gap-2"
+            title="Generate Role with AI"
+          >
+            <SparklesIcon className="w-5 h-5" />
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 mt-2 p-2 bg-slate-900/50 rounded">{promptData.role.description}</p>
+        {isRoleGeneratorVisible && <RoleGenerator onRoleGenerated={onRoleGenerated} />}
+      </Section>
 
-        <Section title="Instruction" description="The primary task or command for the AI.">
-          <TextArea name="instruction" value={promptData.instruction} onChange={handleChange} placeholder="e.g., Generate a React functional component named 'ProductCard'..." />
+      <Section title="Instruction" description="The primary task or command for the AI.">
+        <TextArea name="instruction" value={promptData.instruction} onChange={handleChange} placeholder="e.g., Generate a React functional component named 'ProductCard'..." />
       </Section>
 
       <Section title="Specification" description="Detailed requirements, constraints, and output format.">
@@ -117,28 +110,21 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
       </Section>
 
       <Section title="Preconditions" description="Conditions that must be true before execution (Pro Tier)." isLocked={!isProOrEnterprise}>
-        <TextArea name="preconditions" value={promptData.preconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The 'product' prop object must not be null."/>
+        <TextArea name="preconditions" value={promptData.preconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The 'product' prop object must not be null." />
       </Section>
 
       <Section title="Postconditions" description="Conditions that must be true after execution (Pro Tier)." isLocked={!isProOrEnterprise}>
         <TextArea name="postconditions" value={promptData.postconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The output must be a single, valid TSX file content." />
       </Section>
-      
+
       <Section title="JSON Output Schema" description="Enforce a specific JSON structure for the output (Pro Tier)." isLocked={!isProOrEnterprise}>
-        <textarea name="schema" value={promptData.schema} onChange={handleChange} disabled={!isProOrEnterprise} className="w-full p-2 bg-slate-900 border font-mono text-sm border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" rows={8}/>
+        <textarea name="schema" value={promptData.schema} onChange={handleChange} disabled={!isProOrEnterprise} className="w-full p-2 bg-slate-900 border font-mono text-sm border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" rows={8} />
       </Section>
 
       <Section title="Governance" description="Constitutional principles and safety constraints (Enterprise Tier)." isLocked={!isEnterprise}>
         <TextArea name="governance" value={promptData.governance} onChange={handleChange} disabled={!isEnterprise} />
       </Section>
     </div>
-    <RoleGenerationModal
-      isOpen={isRoleModalOpen}
-      onClose={() => setIsRoleModalOpen(false)}
-      onGenerate={generateRole}
-      onSuccess={handleRoleSuccess}
-    />
-  </>
   );
 };
 
