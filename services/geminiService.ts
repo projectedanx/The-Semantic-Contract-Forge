@@ -1,9 +1,15 @@
-import { GoogleGenAI, Type } from '@google/genai';
-import { PromptData, Tier } from '../types';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PromptData, Tier, Role } from '../types';
 import { generatePromptText } from '../utils/promptGenerator';
 import { loggingService } from './loggingService';
 
-// We assume `process.env.API_KEY` is available in the environment, as per project guidelines.
+const API_KEY = process.env.VITE_GEMINI_API_KEY;
+
+if (!API_KEY) {
+    throw new Error("VITE_GEMINI_API_KEY environment variable not set.");
+}
+
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 /**
  * Validates the output of a prompt against a JSON schema using the Gemini API.
@@ -24,7 +30,6 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
     let schema: Record<string, any>;
     try {
         const parsedSchema = JSON.parse(promptData.schema);
-        // A simple structural check for a valid OpenAPI schema object
         if (typeof parsedSchema.type !== 'string' || typeof parsedSchema.properties !== 'object') {
             throw new Error("Schema must be a valid OpenAPI object with 'type' and 'properties'.");
         }
@@ -35,30 +40,24 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         throw new Error(`Invalid JSON in the Output Schema definition: ${message}`);
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const fullPrompt = generatePromptText(promptData, tier);
-
-    // To make validation more concrete, we add a simple user request.
     const userRequest = `Based on the contract, fulfill this request: "Generate an example output."`;
     const fullContent = `${fullPrompt}\n\n--- USER REQUEST ---\n${userRequest}`;
 
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: fullContent,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: schema as any, // Cast to any to satisfy the SDK's expected type
-            },
+        const result = await model.generateContent(fullContent, {
+            response_mime_type: "application/json",
+            response_schema: schema,
         });
         
-        const jsonText = response.text.trim();
+        const response = result.response;
+        const jsonText = response.text().trim();
         return JSON.parse(jsonText);
 
     } catch (error) {
         loggingService.error("Gemini API Error", error, { prompt: fullPrompt });
         if (error instanceof Error) {
-            // Provide a more user-friendly message for common issues.
             if (error.message.includes('API_KEY')) {
                  throw new Error(`Gemini API Error: Invalid or missing API Key.`);
             }
@@ -72,11 +71,11 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
  * Generates a structured Role object (name and description) from a natural language description.
  *
  * @param {string} roleDescription - A user-provided description of the desired AI persona.
- * @returns {Promise<{ name: string; description: string }>} A promise that resolves to the generated role object.
+ * @returns {Promise<Role>} A promise that resolves to the generated role object.
  * @throws {Error} Throws an error if the Gemini API call fails or the response is not as expected.
  */
-export async function generateRole(roleDescription: string): Promise<{ name: string; description: string }> {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+export async function generateRole(roleDescription: string): Promise<Role> {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const roleSchema = {
         type: "object",
@@ -102,16 +101,13 @@ export async function generateRole(roleDescription: string): Promise<{ name: str
     `;
 
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: roleSchema as any,
-            },
+        const result = await model.generateContent(prompt, {
+            response_mime_type: "application/json",
+            response_schema: roleSchema,
         });
 
-        const jsonText = response.text.trim();
+        const response = result.response;
+        const jsonText = response.text().trim();
         const parsedRole = JSON.parse(jsonText);
 
         if (typeof parsedRole.name !== 'string' || typeof parsedRole.description !== 'string') {
