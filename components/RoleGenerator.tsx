@@ -1,48 +1,29 @@
 
 import React, { useState } from 'react';
 import { Role } from '../types';
-import { generateRole } from '../services/geminiService'; // This service will be created in the next step
 
-/**
- * @interface RoleGeneratorProps
- * @description Props for the RoleGenerator component.
- * @property {(newRole: Role) => void} onRoleGenerated - Callback function to be invoked when a new role is successfully generated.
- */
 interface RoleGeneratorProps {
+  onGenerate: (persona: string) => Promise<Role>;
   onRoleGenerated: (newRole: Role) => void;
+  disabled?: boolean;
 }
 
-/**
- * @const {string} EMOJI_BRAIN
- * @description Unicode emoji for a brain, used for the generate button.
- */
-const EMOJI_BRAIN = '🧠';
-
-/**
- * @component RoleGenerator
- * @description A component that allows users to generate a new AI role persona by describing it in natural language.
- * It interfaces with an AI service to create a structured Role object.
- * @param {RoleGeneratorProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered RoleGenerator component.
- */
-const RoleGenerator: React.FC<RoleGeneratorProps> = ({ onRoleGenerated }) => {
-  const [description, setDescription] = useState('');
+const RoleGenerator: React.FC<RoleGeneratorProps> = ({ onGenerate, onRoleGenerated, disabled }) => {
+  const [persona, setPersona] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!description.trim()) {
-      setError('Please enter a description for the role.');
+    if (!persona.trim()) {
+      setError('Persona description cannot be empty.');
       return;
     }
-
     setIsLoading(true);
     setError(null);
-
     try {
-      const newRole = await generateRole(description);
+      const newRole = await onGenerate(persona);
       onRoleGenerated(newRole);
-      setDescription('');
+      setPersona(''); // Clear input on success
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(message);
@@ -52,20 +33,20 @@ const RoleGenerator: React.FC<RoleGeneratorProps> = ({ onRoleGenerated }) => {
   };
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 mt-4">
-      <h3 className="text-sm font-semibold text-slate-300 mb-2">Generate New Role</h3>
-      <div className="flex flex-col gap-2">
+    <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 space-y-3">
+      <h3 className="text-sm font-semibold text-slate-300">Generate New Role</h3>
+      <div className="space-y-2">
         <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g., 'A cynical history professor who specializes in the fall of the Roman Empire'"
-          className="bg-slate-900 border border-slate-600 rounded-md p-2 text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none w-full h-24 resize-none"
-          disabled={isLoading}
+          value={persona}
+          onChange={(e) => setPersona(e.target.value)}
+          placeholder="e.g., 'A witty pirate captain who explains things in nautical terms.'"
+          className="w-full h-24 p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+          disabled={disabled || isLoading}
         />
         <button
           onClick={handleGenerate}
-          disabled={isLoading}
-          className="bg-sky-600 hover:bg-sky-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-md text-sm flex items-center justify-center transition-colors"
+          disabled={disabled || isLoading || !persona.trim()}
+          className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md disabled:bg-slate-700 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isLoading ? (
             <>
@@ -76,11 +57,11 @@ const RoleGenerator: React.FC<RoleGeneratorProps> = ({ onRoleGenerated }) => {
               Generating...
             </>
           ) : (
-            <>{EMOJI_BRAIN} Generate Role</>
+            'Generate Role'
           )}
         </button>
-        {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
       </div>
+      {error && <p className="text-sm text-red-400">{error}</p>}
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { PromptData, Tier, Role } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
 import RoleGenerator from './RoleGenerator';
+import { generateRole } from '../services/geminiService';
 
 /**
  * @interface PromptEditorProps
@@ -94,7 +95,15 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
           </button>
         </div>
         <p className="text-xs text-slate-500 mt-2 p-2 bg-slate-900/50 rounded">{promptData.role.description}</p>
-        {isRoleGeneratorVisible && <RoleGenerator onRoleGenerated={onRoleGenerated} />}
+        {isRoleGeneratorVisible &&
+          <div className="mt-4">
+            <RoleGenerator
+              onGenerate={generateRole}
+              onRoleGenerated={onRoleGenerated}
+              disabled={!isProOrEnterprise}
+            />
+          </div>
+        }
       </Section>
 
       <Section title="Instruction" description="The primary task or command for the AI.">
