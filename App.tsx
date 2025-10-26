@@ -14,6 +14,10 @@ import { loggingService } from './services/loggingService';
 import { useLocalStorageTemplates } from './hooks/useLocalStorageTemplates';
 import TemplateLibraryModal from './components/TemplateLibraryModal';
 
+/**
+ * @const {string} DEFAULT_SCHEMA
+ * @description The default JSON schema for prompt outputs.
+ */
 const DEFAULT_SCHEMA = JSON.stringify({
   type: "object",
   properties: {
@@ -29,6 +33,10 @@ const DEFAULT_SCHEMA = JSON.stringify({
   required: ["fileName", "content"]
 }, null, 2);
 
+/**
+ * @const {PromptData} INITIAL_PROMPT_DATA
+ * @description The initial state for the prompt editor when the application loads or a new contract is created.
+ */
 const INITIAL_PROMPT_DATA: PromptData = {
   context: 'You are building a component for an e-commerce dashboard.',
   role: ROLES[0],
@@ -41,12 +49,27 @@ const INITIAL_PROMPT_DATA: PromptData = {
   governance: '',
 };
 
+/**
+ * @interface AppContextType
+ * @description The shape of the context provided by the App component.
+ * @property {() => void} onOpenTemplateLibrary - Function to open the template library modal.
+ */
 interface AppContextType {
   onOpenTemplateLibrary: () => void;
 }
+
+/**
+ * @const {React.Context<AppContextType | null>} AppContext
+ * @description React context to provide application-level actions to nested components.
+ */
 export const AppContext = React.createContext<AppContextType | null>(null);
 
-
+/**
+ * @component App
+ * @description The main component of the application. It orchestrates the entire UI and manages the application's state,
+ * including the current tier, prompt data, validation results, and user-saved contracts and templates.
+ * @returns {React.ReactElement} The rendered application.
+ */
 function App() {
   const [currentTier, setCurrentTier] = useState<Tier>('starter');
   const [promptData, setPromptData] = useState<PromptData>(INITIAL_PROMPT_DATA);

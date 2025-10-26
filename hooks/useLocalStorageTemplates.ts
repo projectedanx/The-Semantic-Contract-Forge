@@ -6,8 +6,19 @@ import { loggingService } from '../services/loggingService';
 
 const TEMPLATE_STORAGE_KEY = 'semantic-contract-forge-user-templates';
 
-// This hook provides the set of prompt templates.
-// It loads a static list and any user-created templates from localStorage.
+/**
+ * Custom hook for managing prompt templates.
+ * It loads a static, built-in list of templates and combines them with user-created templates
+ * stored in the browser's local storage.
+ *
+ * @param {(message: string | null) => void} setUserError - A callback function to set user-facing error messages.
+ * @returns {{
+ *   templates: PromptTemplate[],
+ *   saveTemplate: (promptData: PromptData, name: string) => PromptTemplate,
+ *   deleteTemplate: (id: string) => void,
+ *   renameTemplate: (id: string, newName: string) => void
+ * }} An object containing the list of all templates and functions to manage user-created templates.
+ */
 export function useLocalStorageTemplates(
   setUserError: (message: string | null) => void
 ) {
@@ -25,6 +36,14 @@ export function useLocalStorageTemplates(
     }
   }, [setUserError]);
 
+  /**
+   * Saves a new custom template to local storage.
+   *
+   * @param {PromptData} promptData - The prompt data to be saved as a template.
+   * @param {string} name - The name for the new template.
+   * @returns {PromptTemplate} The newly created template object.
+   * @throws {Error} If saving to localStorage fails.
+   */
   const saveTemplate = useCallback((promptData: PromptData, name: string): PromptTemplate => {
     try {
         const newTemplate: PromptTemplate = {
@@ -49,6 +68,12 @@ export function useLocalStorageTemplates(
     }
   }, []);
 
+  /**
+   * Deletes a custom template from local storage by its ID.
+   *
+   * @param {string} id - The ID of the template to delete.
+   * @throws {Error} If deleting from localStorage fails.
+   */
   const deleteTemplate = useCallback((id: string) => {
     try {
         setTemplates(prevTemplates => {
@@ -63,6 +88,13 @@ export function useLocalStorageTemplates(
     }
   }, []);
 
+  /**
+   * Renames a custom template in local storage.
+   *
+   * @param {string} id - The ID of the template to rename.
+   * @param {string} newName - The new name for the template.
+   * @throws {Error} If renaming in localStorage fails.
+   */
   const renameTemplate = useCallback((id: string, newName: string) => {
     try {
         setTemplates(prevTemplates => {

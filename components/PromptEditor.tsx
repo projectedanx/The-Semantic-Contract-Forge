@@ -3,12 +3,26 @@ import React, { useCallback } from 'react';
 import { PromptData, Tier, Role } from '../types';
 import { ROLES } from '../constants';
 
+/**
+ * @interface PromptEditorProps
+ * @description Props for the PromptEditor component.
+ * @property {PromptData} promptData - The current state of the prompt contract data.
+ * @property {React.Dispatch<React.SetStateAction<PromptData>>} setPromptData - The state setter function to update the prompt data.
+ * @property {Tier} currentTier - The user's current tier, used to lock/unlock features.
+ */
 interface PromptEditorProps {
   promptData: PromptData;
   setPromptData: React.Dispatch<React.SetStateAction<PromptData>>;
   currentTier: Tier;
 }
 
+/**
+ * @component Section
+ * @description A reusable component for creating a labeled section with a title and description.
+ * It can be visually locked based on the `isLocked` prop.
+ * @param {{ title: string; description: string; children: React.ReactNode; isLocked?: boolean }} props - The props for the component.
+ * @returns {React.ReactElement} The rendered section component.
+ */
 const Section: React.FC<{ title: string; description: string; children: React.ReactNode; isLocked?: boolean }> = ({ title, description, children, isLocked }) => (
   <div className={`relative p-4 border border-slate-700 rounded-lg ${isLocked ? 'opacity-50' : ''}`}>
     {isLocked && <div className="absolute inset-0 bg-slate-900/50 z-10 rounded-lg"></div>}
@@ -18,6 +32,12 @@ const Section: React.FC<{ title: string; description: string; children: React.Re
   </div>
 );
 
+/**
+ * @component TextArea
+ * @description A styled, reusable textarea component that forwards all standard textarea attributes.
+ * @param {React.TextareaHTMLAttributes<HTMLTextAreaElement>} props - The props for the textarea element.
+ * @returns {React.ReactElement} The rendered textarea component.
+ */
 const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
   <textarea
     {...props}
@@ -26,6 +46,13 @@ const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
   />
 );
 
+/**
+ * @component PromptEditor
+ * @description The main component for editing the fields of a prompt contract.
+ * It is composed of multiple sections, some of which are conditionally disabled based on the user's tier.
+ * @param {PromptEditorProps} props - The props for the component.
+ * @returns {React.ReactElement} The rendered prompt editor form.
+ */
 const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, currentTier }) => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {

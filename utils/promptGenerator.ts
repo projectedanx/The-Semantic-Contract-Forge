@@ -1,6 +1,15 @@
 
 import { PromptData, Tier } from '../types';
 
+/**
+ * Generates a structured prompt text from the prompt data based on the user's tier.
+ * It assembles different sections of the prompt, filtering out empty sections and those
+ * that are not available for the current tier.
+ *
+ * @param {PromptData} data - The prompt data object containing all the fields from the editor.
+ * @param {Tier} tier - The user's current tier, which determines which sections are included.
+ * @returns {string} The final, formatted prompt text string.
+ */
 export function generatePromptText(data: PromptData, tier: Tier): string {
   const sections: { title: string; content: string; minTier: Tier }[] = [
     { title: 'CONTEXT', content: data.context, minTier: 'starter' },

@@ -4,11 +4,21 @@ import { Tier } from '../types';
 import { LockIcon } from './icons/LockIcon';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
 
+/**
+ * @interface TierSelectorProps
+ * @description Props for the TierSelector component.
+ * @property {Tier} currentTier - The currently selected tier.
+ * @property {(tier: Tier) => void} setTier - Callback function to update the selected tier.
+ */
 interface TierSelectorProps {
   currentTier: Tier;
   setTier: (tier: Tier) => void;
 }
 
+/**
+ * @const tiers
+ * @description An object containing the definitions for each tier, including name, description, features, and color.
+ */
 const tiers = {
   starter: {
     name: "Starter",
@@ -30,6 +40,13 @@ const tiers = {
   },
 };
 
+/**
+ * @component TierSelector
+ * @description A component that allows the user to select a tier (Starter, Pro, Enterprise).
+ * The selected tier controls which features are available in the prompt editor.
+ * @param {TierSelectorProps} props - The props for the component.
+ * @returns {React.ReactElement} The rendered tier selector component.
+ */
 const TierSelector: React.FC<TierSelectorProps> = ({ currentTier, setTier }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

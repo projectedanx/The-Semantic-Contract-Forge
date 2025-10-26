@@ -1,5 +1,16 @@
 import React from 'react';
 
+/**
+ * @interface ConfirmationModalProps
+ * @description Props for the ConfirmationModal component.
+ * @property {boolean} isOpen - Whether the modal is open.
+ * @property {() => void} onClose - Function to call when the modal is closed.
+ * @property {() => void} onConfirm - Function to call when the confirm button is clicked.
+ * @property {string} title - The title of the modal.
+ * @property {string} message - The message to display in the modal.
+ * @property {string} [confirmText] - The text for the confirm button. Defaults to 'Confirm'.
+ * @property {string} [cancelText] - The text for the cancel button. Defaults to 'Cancel'.
+ */
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,6 +21,12 @@ interface ConfirmationModalProps {
   cancelText?: string;
 }
 
+/**
+ * @component ConfirmationModal
+ * @description A reusable modal component to confirm user actions.
+ * @param {ConfirmationModalProps} props - The props for the component.
+ * @returns {React.ReactElement | null} A modal dialog for confirming an action, or null if not open.
+ */
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel' }) => {
   if (!isOpen) return null;
 
