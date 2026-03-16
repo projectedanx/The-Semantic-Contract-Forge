@@ -208,7 +208,7 @@ function App() {
           onRenameTemplate={renameTemplate}
           onDeleteTemplate={deleteTemplate}
         />
-        <ErrorToast message={userError} onDismiss={() => setUserError(null)} />
+        {userError && <ErrorToast message={userError} onDismiss={() => setUserError(null)} />}
       </div>
     </AppContext.Provider>
   );

@@ -49,6 +49,7 @@ const ErrorToast: React.FC<ErrorToastProps> = ({ message, onDismiss }) => {
       className={`fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 z-50`}
     >
       <div
+        role="alert"
         className={`w-full max-w-sm bg-red-800/90 backdrop-blur-sm shadow-lg rounded-lg pointer-events-auto ring-1 ring-red-400 ring-opacity-50 transition-all duration-300 ease-in-out
           ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
       >
