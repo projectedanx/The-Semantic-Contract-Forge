@@ -12,6 +12,12 @@ if (!API_KEY) {
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 /**
+ * @const {GenerativeModel} model
+ * @description The cached Gemini-1.5-flash model instance.
+ */
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+/**
  * Validates the output of a prompt against a JSON schema using the Gemini API.
  * This function is only available for Pro and Enterprise tiers. It constructs a full prompt,
  * sends it to the Gemini API with the specified schema, and returns the parsed JSON response.
@@ -40,7 +46,6 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         throw new Error(`Invalid JSON in the Output Schema definition: ${message}`);
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const fullPrompt = generatePromptText(promptData, tier);
     const userRequest = `Based on the contract, fulfill this request: "Generate an example output."`;
     const fullContent = `${fullPrompt}\n\n--- USER REQUEST ---\n${userRequest}`;
@@ -75,8 +80,6 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
  * @throws {Error} Throws an error if the Gemini API call fails or the response is not as expected.
  */
 export async function generateRole(roleDescription: string): Promise<Role> {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
     const roleSchema = {
         type: "object",
         properties: {
