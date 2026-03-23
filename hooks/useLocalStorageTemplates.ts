@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { PromptTemplate, PromptData } from '../types';
 import { TEMPLATES } from '../constants/templates';
 import { loggingService } from '../services/loggingService';
+import { isPromptTemplateArray } from '../utils/validation';
 
 const TEMPLATE_STORAGE_KEY = 'semantic-contract-forge-user-templates';
 
@@ -27,7 +28,18 @@ export function useLocalStorageTemplates(
   useEffect(() => {
     try {
       const storedTemplates = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
-      const userTemplates = storedTemplates ? JSON.parse(storedTemplates) : [];
+      let userTemplates: PromptTemplate[] = [];
+
+      if (storedTemplates) {
+        const parsedTemplates = JSON.parse(storedTemplates);
+        if (isPromptTemplateArray(parsedTemplates)) {
+          userTemplates = parsedTemplates;
+        } else {
+          loggingService.error("Invalid template data in localStorage");
+          setUserError("Could not load some prompt templates. The stored data is invalid.");
+        }
+      }
+
       // Combine built-in templates with user-created templates
       setTemplates([...TEMPLATES, ...userTemplates]);
     } catch (e) {
