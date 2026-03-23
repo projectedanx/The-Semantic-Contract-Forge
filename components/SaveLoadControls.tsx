@@ -96,11 +96,12 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         const selectedId = e.target.value;
         if (selectedId === 'new') {
             onNew();
-        } else {
-            const contract = contracts.find(c => c.id === selectedId);
-            if (contract) {
-                onLoad(contract);
-            }
+            return;
+        }
+
+        const contract = contracts.find(c => c.id === selectedId);
+        if (contract) {
+            onLoad(contract);
         }
     };
 
