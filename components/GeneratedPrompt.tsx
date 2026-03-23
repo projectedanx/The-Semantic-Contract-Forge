@@ -70,8 +70,8 @@ const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidat
         {validationResult && (
           <div className="mt-4 p-4 rounded-lg border bg-slate-900/50 border-slate-700">
             <h3 className="font-semibold text-lg mb-2">Validation Result:</h3>
-            {/* FIX: Check for the failure case first to ensure TypeScript correctly narrows the discriminated union type. */}
-            {!validationResult.success ? (
+            {/* Check for the failure case first to ensure TypeScript correctly narrows the discriminated union type. */}
+            {validationResult.success === false ? (
               <div className="space-y-2">
                 <p className="text-red-400">❌ Validation Failed</p>
                 <pre className="bg-slate-800 text-red-300 p-3 rounded-md overflow-x-auto text-sm">
