@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { SavedPromptContract, PromptData } from '../types';
 import { loggingService } from '../services/loggingService';
+import { isSavedPromptContractArray } from '../utils/validation';
 
 const STORAGE_KEY = 'semantic-contract-forge-contracts';
 
@@ -24,7 +25,13 @@ export function useLocalStorageContracts(
     try {
       const storedContracts = window.localStorage.getItem(STORAGE_KEY);
       if (storedContracts) {
-        setContracts(JSON.parse(storedContracts));
+        const parsedContracts = JSON.parse(storedContracts);
+        if (isSavedPromptContractArray(parsedContracts)) {
+          setContracts(parsedContracts);
+        } else {
+          loggingService.error("Invalid contract data in localStorage");
+          setUserError("Could not load saved contracts. The stored data is invalid.");
+        }
       }
     } catch (e) {
       loggingService.error("Failed to load contracts from localStorage", e);
