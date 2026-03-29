@@ -42,7 +42,7 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         schema = parsedSchema;
     } catch (e) {
         const message = e instanceof Error ? e.message : "The schema is not valid JSON.";
-        loggingService.error("Schema parsing failed", e, { schema: promptData.schema });
+        loggingService.error("Schema parsing failed", e);
         throw new Error(`Invalid JSON in the Output Schema definition: ${message}`);
     }
 
@@ -61,7 +61,7 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         return JSON.parse(jsonText);
 
     } catch (error) {
-        loggingService.error("Gemini API Error", error, { prompt: fullPrompt });
+        loggingService.error("Gemini API Error", error);
         if (error instanceof Error) {
             if (error.message.includes('API_KEY')) {
                  throw new Error(`Gemini API Error: Invalid or missing API Key.`);
@@ -120,7 +120,7 @@ export async function generateRole(roleDescription: string): Promise<Role> {
         return parsedRole;
 
     } catch (error) {
-        loggingService.error("Gemini Role Generation Error", error, { description: roleDescription });
+        loggingService.error("Gemini Role Generation Error", error);
         if (error instanceof Error) {
             if (error.message.includes('API_KEY')) {
                 throw new Error(`Gemini API Error: Invalid or missing API Key.`);
