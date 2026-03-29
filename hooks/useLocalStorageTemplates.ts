@@ -89,8 +89,9 @@ export function useLocalStorageTemplates(
   const deleteTemplate = useCallback((id: string) => {
     try {
         setTemplates(prevTemplates => {
-            const userTemplates = prevTemplates.filter(t => t.id.startsWith('scf-template-'));
-            const updatedUserTemplates = userTemplates.filter(t => t.id !== id);
+            const updatedUserTemplates = prevTemplates.filter(
+              t => t.id.startsWith('scf-template-') && t.id !== id
+            );
             window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedUserTemplates));
             return [...TEMPLATES, ...updatedUserTemplates];
         });
