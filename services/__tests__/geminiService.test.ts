@@ -48,8 +48,7 @@ describe('geminiService', () => {
 
             expect(loggingService.error).toHaveBeenCalledWith(
                 "Schema parsing failed",
-                expect.any(Error),
-                expect.objectContaining({ schema: '{ invalid json }' })
+                expect.any(Error)
             );
         });
 
@@ -66,8 +65,7 @@ describe('geminiService', () => {
 
             expect(loggingService.error).toHaveBeenCalledWith(
                 "Schema parsing failed",
-                expect.any(Error),
-                expect.objectContaining({ schema: dataWithIncompleteSchema.schema })
+                expect.any(Error)
             );
         });
 
@@ -79,6 +77,35 @@ describe('geminiService', () => {
         it('should throw an error if the tier is not pro or enterprise', async () => {
             await expect(validatePromptOutput(mockPromptData, 'starter'))
                 .rejects.toThrow("JSON Schema validation is a Pro/Enterprise feature.");
+        });
+
+        /**
+         * Test Case: Sensitive Data Leakage in Logging (Reproduction)
+         * Scenario: The Gemini API returns an error.
+         * Expected: The fullPrompt should NOT be in the logging context.
+         */
+        it('should NOT log the full prompt when the Gemini API returns an error', async () => {
+            const validSchema = JSON.stringify({ type: 'object', properties: { test: { type: 'string' } } });
+            const dataWithValidSchema = { ...mockPromptData, schema: validSchema };
+
+            // We need to mock the model.generateContent to throw
+            const { GoogleGenerativeAI } = await import('@google/generative-ai');
+            const mockGenerateContent = vi.fn().mockRejectedValue(new Error('API Error'));
+            (GoogleGenerativeAI as any).prototype.getGenerativeModel = vi.fn().mockReturnValue({
+                generateContent: mockGenerateContent
+            });
+
+            await expect(validatePromptOutput(dataWithValidSchema, 'pro'))
+                .rejects.toThrow(/Gemini API Error/);
+
+            expect(loggingService.error).toHaveBeenCalledWith(
+                "Gemini API Error",
+                expect.any(Error)
+            );
+            // Verify that no third argument (context with prompt) was passed
+            const calls = (loggingService.error as any).mock.calls;
+            const lastCall = calls[calls.length - 1];
+            expect(lastCall.length).toBe(2);
         });
     });
 });
