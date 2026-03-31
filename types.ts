@@ -41,7 +41,7 @@ export interface SavedPromptContract extends PromptData {
  * It's a discriminated union type, indicating either success with data or failure with an error message.
  */
 export type ValidationResult =
-  | { success: true; data: any }
+  | { success: true; data: unknown }
   | { success: false; error: string };
 
 /**

@@ -24,16 +24,16 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
  *
  * @param {PromptData} promptData - The data object for the prompt contract.
  * @param {Tier} tier - The user's current tier.
- * @returns {Promise<any>} A promise that resolves to the parsed JSON object from the API response.
+ * @returns {Promise<unknown>} A promise that resolves to the parsed JSON object from the API response.
  * @throws {Error} Throws an error if the tier is not Pro or Enterprise, if the schema is invalid JSON,
  * or if the Gemini API call fails.
  */
-export async function validatePromptOutput(promptData: PromptData, tier: Tier): Promise<any> {
+export async function validatePromptOutput(promptData: PromptData, tier: Tier): Promise<unknown> {
     if (tier !== 'pro' && tier !== 'enterprise') {
         throw new Error("JSON Schema validation is a Pro/Enterprise feature.");
     }
     
-    let schema: Record<string, any>;
+    let schema: Record<string, unknown>;
     try {
         const parsedSchema = JSON.parse(promptData.schema);
         if (typeof parsedSchema.type !== 'string' || typeof parsedSchema.properties !== 'object') {

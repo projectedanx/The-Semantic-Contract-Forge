@@ -52,9 +52,9 @@ class Logger {
    * Logs an error message, including stack trace and context if available.
    * @param {string} message - A descriptive message for the error.
    * @param {Error | unknown} error - The error object.
-   * @param {Record<string, any>} [context] - Optional additional context for the error.
+   * @param {Record<string, unknown>} [context] - Optional additional context for the error.
    */
-  error(message: string, error: Error | unknown, context?: Record<string, any>) {
+  error(message: string, error: Error | unknown, context?: Record<string, unknown>) {
     const details = {
       errorMessage: error instanceof Error ? error.message : 'An unknown error occurred.',
       stack: error instanceof Error ? error.stack : undefined,
