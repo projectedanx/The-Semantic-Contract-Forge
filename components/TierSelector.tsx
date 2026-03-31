@@ -41,6 +41,13 @@ const tiers = {
 };
 
 /**
+ * @const TIER_KEYS
+ * @description The list of available tiers derived from the tiers object.
+ * Hoisted outside the component to avoid repeated Object.keys calls during render.
+ */
+const TIER_KEYS = Object.keys(tiers) as Tier[];
+
+/**
  * @component TierSelector
  * @description A component that allows the user to select a tier (Starter, Pro, Enterprise).
  * The selected tier controls which features are available in the prompt editor.
@@ -50,7 +57,7 @@ const tiers = {
 const TierSelector: React.FC<TierSelectorProps> = ({ currentTier, setTier }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {(Object.keys(tiers) as Tier[]).map((tierKey) => {
+      {TIER_KEYS.map((tierKey) => {
         const tierInfo = tiers[tierKey];
         const isActive = currentTier === tierKey;
         return (
