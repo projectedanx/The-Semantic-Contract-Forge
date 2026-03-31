@@ -48,13 +48,13 @@ describe('validation utils', () => {
 
     it('should return false if id is missing', () => {
       const invalid = { ...validSavedPromptContract };
-      delete (invalid as any).id;
+      delete (invalid as unknown as { id?: string }).id;
       expect(isSavedPromptContract(invalid)).toBe(false);
     });
 
     it('should return false if name is missing', () => {
       const invalid = { ...validSavedPromptContract };
-      delete (invalid as any).name;
+      delete (invalid as unknown as { name?: string }).name;
       expect(isSavedPromptContract(invalid)).toBe(false);
     });
 
@@ -104,13 +104,13 @@ describe('validation utils', () => {
 
     it('should return false if description is missing', () => {
       const invalid = { ...validPromptTemplate };
-      delete (invalid as any).description;
+      delete (invalid as unknown as { description?: string }).description;
       expect(isPromptTemplate(invalid)).toBe(false);
     });
 
     it('should return false if prompt is missing', () => {
       const invalid = { ...validPromptTemplate };
-      delete (invalid as any).prompt;
+      delete (invalid as unknown as { prompt?: unknown }).prompt;
       expect(isPromptTemplate(invalid)).toBe(false);
     });
 

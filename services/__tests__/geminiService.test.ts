@@ -91,7 +91,7 @@ describe('geminiService', () => {
             // We need to mock the model.generateContent to throw
             const { GoogleGenerativeAI } = await import('@google/generative-ai');
             const mockGenerateContent = vi.fn().mockRejectedValue(new Error('API Error'));
-            (GoogleGenerativeAI as any).prototype.getGenerativeModel = vi.fn().mockReturnValue({
+            (GoogleGenerativeAI as unknown as { prototype: { getGenerativeModel: unknown } }).prototype.getGenerativeModel = vi.fn().mockReturnValue({
                 generateContent: mockGenerateContent
             });
 
@@ -103,7 +103,7 @@ describe('geminiService', () => {
                 expect.any(Error)
             );
             // Verify that no third argument (context with prompt) was passed
-            const calls = (loggingService.error as any).mock.calls;
+            const calls = (loggingService.error as unknown as { mock: { calls: unknown[][] } }).mock.calls;
             const lastCall = calls[calls.length - 1];
             expect(lastCall.length).toBe(2);
         });
