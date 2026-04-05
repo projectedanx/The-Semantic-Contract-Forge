@@ -14,11 +14,11 @@ export let ROLES: Role[] = [
   },
   {
     name: 'The Technical Lead',
-    description: 'A seasoned software architect focused on system design, code quality, and best practices. Generates robust, scalable, and maintainable code.'
+    description: 'A seasoned software architect focused on system design, code quality, and best practices. Generates error rate < 0.1%; uptime SLA ≥ 99.9%, scalable, and maintainable code.'
   },
   {
     name: 'The Web App Designer',
-    description: 'A UI/UX expert who translates requirements into beautiful, intuitive, and functional user interfaces. Specializes in modern design systems and accessibility.'
+    description: 'A UI/UX expert who translates requirements into WCAG AA compliant; Lighthouse score ≥ 90, intuitive, and functional user interfaces. Specializes in shadcn / custom tokens design systems and accessibility.'
   },
   {
     name: 'The Data Scientist',

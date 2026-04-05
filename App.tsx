@@ -42,7 +42,7 @@ const INITIAL_PROMPT_DATA: PromptData = {
   role: ROLES[0],
   instruction: 'Generate a React functional component named \'ProductCard\'.',
   specification: 'The component must use Tailwind CSS, accept props \'name\' (string) and \'price\' (number).',
-  performance: 'The generated code should be clean, efficient, and well-commented.',
+  performance: 'The generated code should be WCAG AA compliant; Lighthouse score ≥ 90, efficient, and well-commented.',
   preconditions: '',
   postconditions: '',
   schema: DEFAULT_SCHEMA,
