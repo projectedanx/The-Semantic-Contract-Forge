@@ -1,10 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { validatePromptOutput } from '../geminiService';
+import { validatePromptOutput, generateRole } from '../geminiService';
 import { loggingService } from '../loggingService';
 import { PromptData } from '../../types';
 
 // Mock the external dependencies
-vi.mock('@google/generative-ai');
+
+const mockGenerateContent = vi.fn();
+vi.mock('@google/generative-ai', () => {
+    return {
+        GoogleGenerativeAI: class {
+            getGenerativeModel() {
+                return {
+                    generateContent: (...args: any[]) => mockGenerateContent(...args)
+                };
+            }
+        }
+    };
+});
+
 vi.mock('../loggingService');
 vi.mock('../../utils/promptGenerator');
 
@@ -32,6 +45,7 @@ describe('geminiService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockGenerateContent.mockReset();
     });
 
     describe('validatePromptOutput', () => {
@@ -88,12 +102,7 @@ describe('geminiService', () => {
             const validSchema = JSON.stringify({ type: 'object', properties: { test: { type: 'string' } } });
             const dataWithValidSchema = { ...mockPromptData, schema: validSchema };
 
-            // We need to mock the model.generateContent to throw
-            const { GoogleGenerativeAI } = await import('@google/generative-ai');
-            const mockGenerateContent = vi.fn().mockRejectedValue(new Error('API Error'));
-            (GoogleGenerativeAI as unknown as { prototype: { getGenerativeModel: unknown } }).prototype.getGenerativeModel = vi.fn().mockReturnValue({
-                generateContent: mockGenerateContent
-            });
+            mockGenerateContent.mockRejectedValue(new Error('API Error'));
 
             await expect(validatePromptOutput(dataWithValidSchema, 'pro'))
                 .rejects.toThrow(/Gemini API Error/);
@@ -106,6 +115,55 @@ describe('geminiService', () => {
             const calls = (loggingService.error as unknown as { mock: { calls: unknown[][] } }).mock.calls;
             const lastCall = calls[calls.length - 1];
             expect(lastCall.length).toBe(2);
+        });
+    });
+
+    describe('generateRole', () => {
+        it('should return a parsed role on success', async () => {
+            mockGenerateContent.mockResolvedValue({
+                response: {
+                    text: () => JSON.stringify({ name: 'Test Role', description: 'Test Description' })
+                }
+            });
+
+            const result = await generateRole('Test request');
+            expect(result).toEqual({ name: 'Test Role', description: 'Test Description' });
+        });
+
+        it('should throw an error for invalid structure', async () => {
+            mockGenerateContent.mockResolvedValue({
+                response: {
+                    text: () => JSON.stringify({ invalid: 'structure' })
+                }
+            });
+
+            await expect(generateRole('Test request'))
+                .rejects.toThrow('API returned an invalid role structure.');
+            expect(loggingService.error).toHaveBeenCalledWith(
+                "Gemini Role Generation Error",
+                expect.any(Error)
+            );
+        });
+
+        it('should throw API Key error', async () => {
+            mockGenerateContent.mockRejectedValue(new Error('Invalid API_KEY'));
+
+            await expect(generateRole('Test request'))
+                .rejects.toThrow('Gemini API Error: Invalid or missing API Key.');
+        });
+
+        it('should throw general API error', async () => {
+            mockGenerateContent.mockRejectedValue(new Error('Some other error'));
+
+            await expect(generateRole('Test request'))
+                .rejects.toThrow('Gemini API Error: Some other error');
+        });
+
+        it('should throw unknown error if not an Error object', async () => {
+            mockGenerateContent.mockRejectedValue('String error');
+
+            await expect(generateRole('Test request'))
+                .rejects.toThrow('An unknown error occurred during role generation.');
         });
     });
 });
