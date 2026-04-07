@@ -5,6 +5,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLocalStorageTemplates } from '../useLocalStorageTemplates';
 import { TEMPLATES } from '../../constants/templates';
+import { loggingService } from '../../services/loggingService';
+
 import { PromptData, PromptTemplate } from '../../types';
 
 // Mock localStorage
@@ -157,6 +159,30 @@ describe('useLocalStorageTemplates', () => {
 
     expect(localStorageMock.setItem).not.toHaveBeenCalled();
     expect(result.current.templates).toEqual(initialState);
+  });
+
+
+  it('should catch and rethrow error when saving to localStorage fails', () => {
+    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
+
+    // Mock setItem to throw an error
+    localStorageMock.setItem.mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+
+    // Spy on loggingService.error
+    const loggingSpy = vi.spyOn(loggingService, 'error').mockImplementation(() => {});
+
+    expect(() => {
+      result.current.saveTemplate(mockPromptData, 'Failing Template');
+    }).toThrowError("Could not save the template. Your browser's storage might be full.");
+
+    expect(loggingSpy).toHaveBeenCalledWith(
+      "Failed to save template to localStorage",
+      expect.any(Error)
+    );
+
+    loggingSpy.mockRestore();
   });
 
   it('should not rename a built-in template', () => {
