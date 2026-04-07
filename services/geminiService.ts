@@ -3,20 +3,6 @@ import { PromptData, Tier, Role } from '../types';
 import { generatePromptText } from '../utils/promptGenerator';
 import { loggingService } from './loggingService';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-if (!API_KEY) {
-    throw new Error("VITE_GEMINI_API_KEY environment variable not set.");
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-/**
- * @const {GenerativeModel} model
- * @description The cached Gemini-1.5-flash model instance.
- */
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
 /**
  * Validates the output of a prompt against a JSON schema using the Gemini API.
  * This function is only available for Pro and Enterprise tiers. It constructs a full prompt,
@@ -24,11 +10,15 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
  *
  * @param {PromptData} promptData - The data object for the prompt contract.
  * @param {Tier} tier - The user's current tier.
+ * @param {string} apiKey - The user's Gemini API key.
  * @returns {Promise<unknown>} A promise that resolves to the parsed JSON object from the API response.
  * @throws {Error} Throws an error if the tier is not Pro or Enterprise, if the schema is invalid JSON,
  * or if the Gemini API call fails.
  */
-export async function validatePromptOutput(promptData: PromptData, tier: Tier): Promise<unknown> {
+export async function validatePromptOutput(promptData: PromptData, tier: Tier, apiKey: string): Promise<unknown> {
+    if (!apiKey) throw new Error("API Key is required.");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     if (tier !== 'pro' && tier !== 'enterprise') {
         throw new Error("JSON Schema validation is a Pro/Enterprise feature.");
     }
@@ -76,10 +66,14 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
  * Generates a structured Role object (name and description) from a natural language description.
  *
  * @param {string} roleDescription - A user-provided description of the desired AI persona.
+ * @param {string} apiKey - The user's Gemini API key.
  * @returns {Promise<Role>} A promise that resolves to the generated role object.
  * @throws {Error} Throws an error if the Gemini API call fails or the response is not as expected.
  */
-export async function generateRole(roleDescription: string): Promise<Role> {
+export async function generateRole(roleDescription: string, apiKey: string): Promise<Role> {
+    if (!apiKey) throw new Error("API Key is required.");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const roleSchema = {
         type: "object",
         properties: {

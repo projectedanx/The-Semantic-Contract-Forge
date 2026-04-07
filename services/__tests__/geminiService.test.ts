@@ -57,7 +57,7 @@ describe('geminiService', () => {
         it('should throw an error when the schema is invalid JSON', async () => {
             const dataWithInvalidJson = { ...mockPromptData, schema: '{ invalid json }' };
 
-            await expect(validatePromptOutput(dataWithInvalidJson, 'pro'))
+            await expect(validatePromptOutput(dataWithInvalidJson, 'pro', 'dummy_key'))
                 .rejects.toThrow(/Invalid JSON in the Output Schema definition/);
 
             expect(loggingService.error).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe('geminiService', () => {
         it('should throw an error when the schema is missing required OpenAPI fields', async () => {
             const dataWithIncompleteSchema = { ...mockPromptData, schema: JSON.stringify({ not: "a schema" }) };
 
-            await expect(validatePromptOutput(dataWithIncompleteSchema, 'pro'))
+            await expect(validatePromptOutput(dataWithIncompleteSchema, 'pro', 'dummy_key'))
                 .rejects.toThrow("Invalid JSON in the Output Schema definition: Schema must be a valid OpenAPI object with 'type' and 'properties'.");
 
             expect(loggingService.error).toHaveBeenCalledWith(
@@ -89,7 +89,7 @@ describe('geminiService', () => {
          * Expected: The function should throw an Error stating it's a Pro/Enterprise feature.
          */
         it('should throw an error if the tier is not pro or enterprise', async () => {
-            await expect(validatePromptOutput(mockPromptData, 'starter'))
+            await expect(validatePromptOutput(mockPromptData, 'starter', 'dummy_key'))
                 .rejects.toThrow("JSON Schema validation is a Pro/Enterprise feature.");
         });
 
@@ -104,7 +104,7 @@ describe('geminiService', () => {
 
             mockGenerateContent.mockRejectedValue(new Error('API Error'));
 
-            await expect(validatePromptOutput(dataWithValidSchema, 'pro'))
+            await expect(validatePromptOutput(dataWithValidSchema, 'pro', 'dummy_key'))
                 .rejects.toThrow(/Gemini API Error/);
 
             expect(loggingService.error).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe('geminiService', () => {
                 }
             });
 
-            const result = await generateRole('Test request');
+            const result = await generateRole('Test request', 'dummy_key');
             expect(result).toEqual({ name: 'Test Role', description: 'Test Description' });
         });
 
@@ -137,7 +137,7 @@ describe('geminiService', () => {
                 }
             });
 
-            await expect(generateRole('Test request'))
+            await expect(generateRole('Test request', 'dummy_key'))
                 .rejects.toThrow('API returned an invalid role structure.');
             expect(loggingService.error).toHaveBeenCalledWith(
                 "Gemini Role Generation Error",
@@ -148,21 +148,21 @@ describe('geminiService', () => {
         it('should throw API Key error', async () => {
             mockGenerateContent.mockRejectedValue(new Error('Invalid API_KEY'));
 
-            await expect(generateRole('Test request'))
+            await expect(generateRole('Test request', 'dummy_key'))
                 .rejects.toThrow('Gemini API Error: Invalid or missing API Key.');
         });
 
         it('should throw general API error', async () => {
             mockGenerateContent.mockRejectedValue(new Error('Some other error'));
 
-            await expect(generateRole('Test request'))
+            await expect(generateRole('Test request', 'dummy_key'))
                 .rejects.toThrow('Gemini API Error: Some other error');
         });
 
         it('should throw unknown error if not an Error object', async () => {
             mockGenerateContent.mockRejectedValue('String error');
 
-            await expect(generateRole('Test request'))
+            await expect(generateRole('Test request', 'dummy_key'))
                 .rejects.toThrow('An unknown error occurred during role generation.');
         });
     });
