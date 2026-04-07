@@ -109,17 +109,21 @@ function App() {
     setValidationResult(null);
   }, []);
 
+  const handleSaveError = useCallback((e: unknown, defaultMessage: string) => {
+    const message = e instanceof Error ? e.message : defaultMessage;
+    setUserError(message);
+    throw e;
+  }, []);
+
   const handleSave = useCallback((data: PromptData, id: string | null, name: string): SavedPromptContract => {
     try {
       const saved = saveContract(data, id, name);
       setActiveContract(saved);
       return saved;
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to save contract.";
-      setUserError(message);
-      throw e;
+      handleSaveError(e, "Failed to save contract.");
     }
-  }, [saveContract]);
+  }, [saveContract, handleSaveError]);
 
   const handleSaveTemplate = useCallback((data: PromptData, name: string): PromptTemplate => {
     try {
@@ -127,11 +131,9 @@ function App() {
       // Maybe show a confirmation toast?
       return saved;
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to save template.";
-      setUserError(message);
-      throw e;
+      handleSaveError(e, "Failed to save template.");
     }
-  }, [saveTemplate]);
+  }, [saveTemplate, handleSaveError]);
 
   const handleLoad = useCallback((contract: SavedPromptContract) => {
     setPromptData(contract);
