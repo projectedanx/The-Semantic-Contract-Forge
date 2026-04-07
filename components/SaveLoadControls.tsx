@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { SavedPromptContract, PromptData } from '../types';
 import ConfirmationModal from './ConfirmationModal';
 import { TrashIcon } from './icons/TrashIcon';
@@ -43,6 +43,16 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
     const [contractToDelete, setContractToDelete] = useState<string | null>(null);
     const [contractName, setContractName] = useState('');
     const appContext = useContext(AppContext);
+
+    /**
+     * @const contractToDeleteName
+     * @description Memoized name of the contract currently selected for deletion.
+     * Prevents O(N) array search on every render.
+     */
+    const contractToDeleteName = useMemo(() => {
+        if (!contractToDelete) return '';
+        return contracts.find(c => c.id === contractToDelete)?.name || '';
+    }, [contracts, contractToDelete]);
 
     useEffect(() => {
         if (activeContract) {
@@ -195,7 +205,7 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={handleConfirmDelete}
                 title="Delete Contract"
-                message={`Are you sure you want to delete "${contracts.find(c => c.id === contractToDelete)?.name}"? This action cannot be undone.`}
+                message={`Are you sure you want to delete "${contractToDeleteName}"? This action cannot be undone.`}
                 confirmText="Delete"
             />
         </>
