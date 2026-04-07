@@ -6,6 +6,85 @@ import { ROLES } from "../../constants.js";
 
 // KORSAKOV: PHASE_3_EXECUTION. Persona suspended. Type-system active.
 
+
+/**
+ * Arguments for the generate_product_requirements_prompt tool.
+ * @property {object} contract_core - Core elements of the prompt contract.
+ * @property {string} contract_core.context - Project context and background.
+ * @property {string} contract_core.role_name - Role name.
+ * @property {string} contract_core.role_description - Role description.
+ * @property {string} contract_core.instruction - Main instruction or task.
+ * @property {string} contract_core.specification - Detailed technical specification.
+ * @property {string} contract_core.performance - Performance criteria and metrics.
+ * @property {object} dbc_constraints - Design by Contract constraints.
+ * @property {string} dbc_constraints.preconditions - Preconditions required for execution.
+ * @property {string} dbc_constraints.postconditions - Postconditions guaranteed upon completion.
+ * @property {string} dbc_constraints.schema - JSON output schema definition.
+ * @property {string} dbc_constraints.governance - Governance constraints and policies.
+ * @property {"starter" | "pro" | "enterprise"} tier - Target output tier. Dictates section inclusion.
+ */
+interface GenerateProductRequirementsPromptArgs {
+  contract_core: {
+    context: string;
+    role_name: string;
+    role_description: string;
+    instruction: string;
+    specification: string;
+    performance: string;
+  };
+  dbc_constraints: {
+    preconditions: string;
+    postconditions: string;
+    schema: string;
+    governance: string;
+  };
+  tier: "starter" | "pro" | "enterprise";
+}
+
+/**
+ * Handles the generation of a Product Requirements Prompt based on Contract data.
+ * @param {GenerateProductRequirementsPromptArgs} args - The arguments for generating the prompt.
+ * @returns {Promise<{ content: Array<{ type: "text", text: string }>, isError?: boolean }>} The result object containing the generated prompt or an error.
+ */
+async function handleGenerateProductRequirementsPrompt({ contract_core, dbc_constraints, tier }: GenerateProductRequirementsPromptArgs) {
+  try {
+    const promptData = {
+      context: contract_core.context,
+      role: {
+        name: contract_core.role_name,
+        description: contract_core.role_description,
+      },
+      instruction: contract_core.instruction,
+      specification: contract_core.specification,
+      performance: contract_core.performance,
+      preconditions: dbc_constraints.preconditions,
+      postconditions: dbc_constraints.postconditions,
+      schema: dbc_constraints.schema,
+      governance: dbc_constraints.governance,
+    };
+
+    const generatedPrompt = generatePromptText(promptData, tier);
+
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify({ status: "SUCCESS", prompt: generatedPrompt }) }],
+    };
+  } catch (err) {
+    return {
+      content: [{
+        type: "text" as const,
+        text: JSON.stringify({
+          error_code: "TOOL_FAULT_SERVER_TOOL_CONFIGURATION",
+          fault_category: "SERVER_TOOL_CONFIGURATION",
+          structured_detail: { violation: "PROMPT_GENERATION_FAILED", error: String(err) },
+          retry_viable: false,
+          suggested_decomposition: "Verify schema definitions and tier compatibility.",
+        }),
+      }],
+      isError: true,
+    };
+  }
+}
+
 const server = new McpServer({
   name: "scf-mcp-server",
   version: "2026.4.1",
@@ -28,12 +107,12 @@ server.registerTool(
   async () => {
     try {
       return {
-        content: [{ type: "text", text: JSON.stringify({ status: "SUCCESS", data: ROLES }) }],
+        content: [{ type: "text" as const, text: JSON.stringify({ status: "SUCCESS", data: ROLES }) }],
       };
     } catch (err) {
       return {
         content: [{
-          type: "text",
+          type: "text" as const,
           text: JSON.stringify({
             error_code: "TOOL_FAULT_GENERAL_PROGRAMMING",
             fault_category: "GENERAL_PROGRAMMING",
@@ -76,44 +155,7 @@ server.registerTool(
       tier: z.enum(["starter", "pro", "enterprise"]).describe("Target output tier. Dictates section inclusion."),
     }),
   },
-  async ({ contract_core, dbc_constraints, tier }) => {
-    try {
-      const promptData = {
-        context: contract_core.context,
-        role: {
-          name: contract_core.role_name,
-          description: contract_core.role_description,
-        },
-        instruction: contract_core.instruction,
-        specification: contract_core.specification,
-        performance: contract_core.performance,
-        preconditions: dbc_constraints.preconditions,
-        postconditions: dbc_constraints.postconditions,
-        schema: dbc_constraints.schema,
-        governance: dbc_constraints.governance,
-      };
-
-      const generatedPrompt = generatePromptText(promptData, tier);
-
-      return {
-        content: [{ type: "text", text: JSON.stringify({ status: "SUCCESS", prompt: generatedPrompt }) }],
-      };
-    } catch (err) {
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            error_code: "TOOL_FAULT_SERVER_TOOL_CONFIGURATION",
-            fault_category: "SERVER_TOOL_CONFIGURATION",
-            structured_detail: { violation: "PROMPT_GENERATION_FAILED", error: String(err) },
-            retry_viable: false,
-            suggested_decomposition: "Verify schema definitions and tier compatibility.",
-          }),
-        }],
-        isError: true,
-      };
-    }
-  }
+  handleGenerateProductRequirementsPrompt
 );
 
 async function main() {
