@@ -32,7 +32,6 @@ Built on the principles of **Design by Contract (DbC)**, the SCF enables develop
 3.  **Set up environment variables:**
     Create a `.env` file in the root of the project and add your Google Gemini API key:
     ```
-    VITE_GEMINI_API_KEY=your_gemini_api_key_here
     ```
     *Note: The application uses Vite, which automatically loads environment variables from `.env` files.*
 

@@ -79,6 +79,7 @@ function App() {
   const [activeContract, setActiveContract] = useState<SavedPromptContract | null>(null);
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
   const [roles, setRoles] = useState<Role[]>(ROLES);
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('gemini_api_key') || '');
 
   const { contracts, saveContract, deleteContract } = useLocalStorageContracts(setUserError);
   const { templates, saveTemplate, renameTemplate, deleteTemplate } = useLocalStorageTemplates(setUserError);
@@ -86,11 +87,15 @@ function App() {
   const generatedPromptText = useMemo(() => generatePromptText(promptData, currentTier), [promptData, currentTier]);
   
   const handleValidate = async () => {
+    if (!apiKey) {
+      setUserError("Please enter your Gemini API Key.");
+      return;
+    }
     setIsLoading(true);
     setValidationResult(null);
     setUserError(null);
     try {
-      const result = await validatePromptOutput(promptData, currentTier);
+      const result = await validatePromptOutput(promptData, currentTier, apiKey);
       setValidationResult({ success: true, data: result });
       loggingService.info("Validation successful", result);
     } catch (error) {
@@ -182,6 +187,20 @@ function App() {
         />
         <main className="container mx-auto p-4 md:p-8">
           <div className="space-y-8">
+            <div className="bg-slate-800/30 p-6 rounded-lg border border-slate-700">
+              <label className="block text-lg font-semibold text-slate-100 mb-2">Gemini API Key</label>
+              <input
+                type="password"
+                placeholder="Enter your Gemini API Key..."
+                value={apiKey}
+                onChange={(e) => {
+                  setApiKey(e.target.value);
+                  localStorage.setItem('gemini_api_key', e.target.value);
+                }}
+                className="w-full p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
+              />
+              <p className="text-sm text-slate-400 mt-2">Required for validating JSON schemas and generating roles.</p>
+            </div>
             <TierSelector currentTier={currentTier} setTier={setCurrentTier} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               <PromptEditor
@@ -190,6 +209,7 @@ function App() {
                 currentTier={currentTier}
                 roles={roles}
                 onRoleGenerated={handleRoleGenerated}
+                apiKey={apiKey}
               />
               <GeneratedPrompt
                 promptText={generatedPromptText}

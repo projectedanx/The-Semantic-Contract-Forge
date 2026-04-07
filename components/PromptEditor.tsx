@@ -18,6 +18,7 @@ interface PromptEditorProps {
   currentTier: Tier;
   roles: Role[];
   onRoleGenerated: (newRole: Role) => void;
+  apiKey: string;
 }
 
 /**
@@ -57,7 +58,7 @@ const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
  * @param {PromptEditorProps} props - The props for the component.
  * @returns {React.ReactElement} The rendered prompt editor form.
  */
-const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, currentTier, roles, onRoleGenerated }) => {
+const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, currentTier, roles, onRoleGenerated, apiKey }) => {
 
   const roleMap = useMemo(() => {
     const map = new Map<string, Role>();
@@ -106,7 +107,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
         {isRoleGeneratorVisible &&
           <div className="mt-4">
             <RoleGenerator
-              onGenerate={generateRole}
+              onGenerate={(persona) => generateRole(persona, apiKey)}
               onRoleGenerated={onRoleGenerated}
               disabled={!isProOrEnterprise}
             />
