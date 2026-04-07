@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { SavedPromptContract, PromptData } from '../types';
 import { loggingService } from '../services/loggingService';
 import { isSavedPromptContractArray } from '../utils/validation';
+import { useLocalStorage } from './useLocalStorage';
 
 const STORAGE_KEY = 'semantic-contract-forge-contracts';
 
@@ -19,29 +20,26 @@ const STORAGE_KEY = 'semantic-contract-forge-contracts';
 export function useLocalStorageContracts(
   setUserError: (message: string | null) => void
 ) {
-  const [contracts, setContracts] = useState<Record<string, SavedPromptContract>>({});
-
-  useEffect(() => {
-    try {
-      const storedContracts = window.localStorage.getItem(STORAGE_KEY);
-      if (storedContracts) {
-        const parsedContracts = JSON.parse(storedContracts);
-        if (isSavedPromptContractArray(parsedContracts)) {
-          const contractsMap: Record<string, SavedPromptContract> = {};
-          parsedContracts.forEach((contract: SavedPromptContract) => {
-            contractsMap[contract.id] = contract;
-          });
-          setContracts(contractsMap);
-        } else {
-          loggingService.error("Invalid contract data in localStorage");
-          setUserError("Could not load saved contracts. The stored data is invalid.");
-        }
-      }
-    } catch (e) {
-      loggingService.error("Failed to load contracts from localStorage", e);
-      setUserError("Could not load saved contracts. Your browser's storage might be disabled or full.");
-    }
-  }, [setUserError]);
+  const [contracts, setContracts] = useLocalStorage<Record<string, SavedPromptContract>, SavedPromptContract[]>(
+    STORAGE_KEY,
+    {},
+    isSavedPromptContractArray,
+    setUserError,
+    {
+      invalidData: "Could not load saved contracts. The stored data is invalid.",
+      loadError: "Could not load saved contracts. Your browser's storage might be disabled or full."
+    },
+    useCallback((parsedContracts: SavedPromptContract[]) => {
+      const contractsMap: Record<string, SavedPromptContract> = {};
+      parsedContracts.forEach((contract: SavedPromptContract) => {
+        contractsMap[contract.id] = contract;
+      });
+      return contractsMap;
+    }, []),
+    useCallback((contractsMap: Record<string, SavedPromptContract>) => {
+      return Object.values(contractsMap);
+    }, [])
+  );
 
   /**
    * Saves or updates a prompt contract in local storage.
@@ -54,8 +52,8 @@ export function useLocalStorageContracts(
    * @throws {Error} If saving to localStorage fails.
    */
   const saveContract = useCallback((contractToSave: PromptData, id: string | null, name: string): SavedPromptContract => {
+    let newContract: SavedPromptContract = null!;
     try {
-      let newContract: SavedPromptContract = null!;
       setContracts(prevContracts => {
         let updatedContracts: Record<string, SavedPromptContract>;
 
@@ -70,16 +68,14 @@ export function useLocalStorageContracts(
           updatedContracts = { ...prevContracts, [newId]: newContract };
         }
         
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.values(updatedContracts)));
         return updatedContracts;
       });
       return newContract;
     } catch (e) {
-      loggingService.error("Failed to save contract to localStorage", e);
       // Re-throw to be caught by the calling component
       throw new Error("Could not save the contract. Your browser's storage might be full.");
     }
-  }, []);
+  }, [setContracts]);
 
   /**
    * Deletes a contract from local storage by its ID.
@@ -92,14 +88,12 @@ export function useLocalStorageContracts(
       setContracts(prevContracts => {
         const updatedContracts = { ...prevContracts };
         delete updatedContracts[id];
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.values(updatedContracts)));
         return updatedContracts;
       });
     } catch (e) {
-      loggingService.error("Failed to delete contract from localStorage", e);
       throw new Error("Could not delete the contract.");
     }
-  }, []);
+  }, [setContracts]);
 
   const contractsArray = useMemo(() => Object.values(contracts), [contracts]);
 
