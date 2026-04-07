@@ -26,7 +26,7 @@ This document defines the coding standards, architectural principles, and person
 
 -   **API Integration:**
     -   All external API calls **must** handle errors gracefully.
-    -   Never hardcode API keys or sensitive information. Use environment variables (`process.env`).
+    -   Never hardcode API keys or sensitive information. Use environment variables (`import.meta.env` for Vite).
 
 -   **Gemini API Usage:**
     -   **Be Specific:** Always provide clear, context-rich prompts to the Gemini API. The structured approach of the SCF is the canonical example.
