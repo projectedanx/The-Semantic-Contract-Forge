@@ -1,9 +1,9 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { PromptTemplate, PromptData } from '../types';
 import { TEMPLATES } from '../constants/templates';
 import { loggingService } from '../services/loggingService';
 import { isPromptTemplateArray } from '../utils/validation';
+import { useLocalStorage } from './useLocalStorage';
 
 const TEMPLATE_STORAGE_KEY = 'semantic-contract-forge-user-templates';
 
@@ -23,30 +23,20 @@ const TEMPLATE_STORAGE_KEY = 'semantic-contract-forge-user-templates';
 export function useLocalStorageTemplates(
   setUserError: (message: string | null) => void
 ) {
-  const [templates, setTemplates] = useState<PromptTemplate[]>([]);
-
-  useEffect(() => {
-    try {
-      const storedTemplates = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
-      let userTemplates: PromptTemplate[] = [];
-
-      if (storedTemplates) {
-        const parsedTemplates = JSON.parse(storedTemplates);
-        if (isPromptTemplateArray(parsedTemplates)) {
-          userTemplates = parsedTemplates;
-        } else {
-          loggingService.error("Invalid template data in localStorage");
-          setUserError("Could not load some prompt templates. The stored data is invalid.");
-        }
-      }
-
-      // Combine built-in templates with user-created templates
-      setTemplates([...TEMPLATES, ...userTemplates]);
-    } catch (e) {
-      loggingService.error("Failed to load templates", e);
-      setUserError("Could not load prompt templates.");
+  const [userTemplates, setUserTemplates] = useLocalStorage<PromptTemplate[]>(
+    TEMPLATE_STORAGE_KEY,
+    [],
+    isPromptTemplateArray,
+    setUserError,
+    {
+      invalidData: "Could not load some prompt templates. The stored data is invalid.",
+      loadError: "Could not load prompt templates."
     }
-  }, [setUserError]);
+  );
+
+  const templates = useMemo(() => {
+    return [...TEMPLATES, ...userTemplates];
+  }, [userTemplates]);
 
   /**
    * Saves a new custom template to local storage.
@@ -66,11 +56,9 @@ export function useLocalStorageTemplates(
             prompt: { ...promptData },
         };
 
-        setTemplates(prevTemplates => {
-            const userTemplates = prevTemplates.filter(t => t.id.startsWith('scf-template-'));
-            const updatedUserTemplates = [...userTemplates, newTemplate];
-            window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedUserTemplates));
-            return [...TEMPLATES, ...updatedUserTemplates];
+        setUserTemplates(prevTemplates => {
+            const currentUsers = prevTemplates.filter(t => t.id.startsWith('scf-template-'));
+            return [...currentUsers, newTemplate];
         });
 
         return newTemplate;
@@ -78,7 +66,7 @@ export function useLocalStorageTemplates(
         loggingService.error("Failed to save template to localStorage", e);
         throw new Error("Could not save the template. Your browser's storage might be full.");
     }
-  }, []);
+  }, [setUserTemplates]);
 
   /**
    * Deletes a custom template from local storage by its ID.
@@ -88,18 +76,16 @@ export function useLocalStorageTemplates(
    */
   const deleteTemplate = useCallback((id: string) => {
     try {
-        setTemplates(prevTemplates => {
-            const updatedUserTemplates = prevTemplates.filter(
+        setUserTemplates(prevTemplates => {
+            return prevTemplates.filter(
               t => t.id.startsWith('scf-template-') && t.id !== id
             );
-            window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedUserTemplates));
-            return [...TEMPLATES, ...updatedUserTemplates];
         });
     } catch (e) {
         loggingService.error("Failed to delete template from localStorage", e);
         throw new Error("Could not delete the template.");
     }
-  }, []);
+  }, [setUserTemplates]);
 
   /**
    * Renames a custom template in local storage.
@@ -110,7 +96,7 @@ export function useLocalStorageTemplates(
    */
   const renameTemplate = useCallback((id: string, newName: string) => {
     try {
-        setTemplates(prevTemplates => {
+        setUserTemplates(prevTemplates => {
             const templateIndex = prevTemplates.findIndex(t => t.id === id);
 
             if (templateIndex === -1 || !prevTemplates[templateIndex].id.startsWith('scf-template-')) {
@@ -120,16 +106,13 @@ export function useLocalStorageTemplates(
             const updatedTemplates = [...prevTemplates];
             updatedTemplates[templateIndex] = { ...updatedTemplates[templateIndex], name: newName };
 
-            const updatedUserTemplates = updatedTemplates.filter(t => t.id.startsWith('scf-template-'));
-            window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedUserTemplates));
-
-            return updatedTemplates;
+            return updatedTemplates.filter(t => t.id.startsWith('scf-template-'));
         });
     } catch (e) {
         loggingService.error("Failed to rename template in localStorage", e);
         throw new Error("Could not rename the template.");
     }
-  }, []);
+  }, [setUserTemplates]);
 
   return { templates, saveTemplate, deleteTemplate, renameTemplate };
 }
