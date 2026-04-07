@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { SavedPromptContract, PromptData } from '../types';
 import { loggingService } from '../services/loggingService';
 import { isSavedPromptContractArray } from '../utils/validation';
@@ -19,7 +19,7 @@ const STORAGE_KEY = 'semantic-contract-forge-contracts';
 export function useLocalStorageContracts(
   setUserError: (message: string | null) => void
 ) {
-  const [contracts, setContracts] = useState<SavedPromptContract[]>([]);
+  const [contracts, setContracts] = useState<Record<string, SavedPromptContract>>({});
 
   useEffect(() => {
     try {
@@ -27,7 +27,11 @@ export function useLocalStorageContracts(
       if (storedContracts) {
         const parsedContracts = JSON.parse(storedContracts);
         if (isSavedPromptContractArray(parsedContracts)) {
-          setContracts(parsedContracts);
+          const contractsMap: Record<string, SavedPromptContract> = {};
+          parsedContracts.forEach((contract: SavedPromptContract) => {
+            contractsMap[contract.id] = contract;
+          });
+          setContracts(contractsMap);
         } else {
           loggingService.error("Invalid contract data in localStorage");
           setUserError("Could not load saved contracts. The stored data is invalid.");
@@ -53,21 +57,20 @@ export function useLocalStorageContracts(
     try {
       let newContract: SavedPromptContract = null!;
       setContracts(prevContracts => {
-        const existingContractIndex = id ? prevContracts.findIndex(c => c.id === id) : -1;
-        let updatedContracts: SavedPromptContract[];
+        let updatedContracts: Record<string, SavedPromptContract>;
 
-        if (existingContractIndex > -1) {
+        if (id && prevContracts[id]) {
           // Update existing contract
-          newContract = { ...prevContracts[existingContractIndex], ...contractToSave, name };
-          updatedContracts = [...prevContracts];
-          updatedContracts[existingContractIndex] = newContract;
+          newContract = { ...prevContracts[id], ...contractToSave, name };
+          updatedContracts = { ...prevContracts, [id]: newContract };
         } else {
           // Create new contract
-          newContract = { ...contractToSave, id: `scf-${Date.now()}`, name };
-          updatedContracts = [...prevContracts, newContract];
+          const newId = `scf-${Date.now()}`;
+          newContract = { ...contractToSave, id: newId, name };
+          updatedContracts = { ...prevContracts, [newId]: newContract };
         }
         
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedContracts));
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.values(updatedContracts)));
         return updatedContracts;
       });
       return newContract;
@@ -87,8 +90,9 @@ export function useLocalStorageContracts(
   const deleteContract = useCallback((id: string) => {
     try {
       setContracts(prevContracts => {
-        const updatedContracts = prevContracts.filter(c => c.id !== id);
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedContracts));
+        const updatedContracts = { ...prevContracts };
+        delete updatedContracts[id];
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.values(updatedContracts)));
         return updatedContracts;
       });
     } catch (e) {
@@ -97,5 +101,7 @@ export function useLocalStorageContracts(
     }
   }, []);
 
-  return { contracts, saveContract, deleteContract };
+  const contractsArray = useMemo(() => Object.values(contracts), [contracts]);
+
+  return { contracts: contractsArray, saveContract, deleteContract };
 }
