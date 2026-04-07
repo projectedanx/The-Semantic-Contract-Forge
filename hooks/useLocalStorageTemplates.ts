@@ -111,15 +111,19 @@ export function useLocalStorageTemplates(
   const renameTemplate = useCallback((id: string, newName: string) => {
     try {
         setTemplates(prevTemplates => {
-            const userTemplates = prevTemplates.filter(t => t.id.startsWith('scf-template-'));
-            const templateIndex = userTemplates.findIndex(t => t.id === id);
-            if (templateIndex === -1) return prevTemplates;
+            const templateIndex = prevTemplates.findIndex(t => t.id === id);
 
-            const updatedUserTemplates = [...userTemplates];
-            updatedUserTemplates[templateIndex] = { ...updatedUserTemplates[templateIndex], name: newName };
+            if (templateIndex === -1 || !prevTemplates[templateIndex].id.startsWith('scf-template-')) {
+                return prevTemplates;
+            }
 
+            const updatedTemplates = [...prevTemplates];
+            updatedTemplates[templateIndex] = { ...updatedTemplates[templateIndex], name: newName };
+
+            const updatedUserTemplates = updatedTemplates.filter(t => t.id.startsWith('scf-template-'));
             window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(updatedUserTemplates));
-            return [...TEMPLATES, ...updatedUserTemplates];
+
+            return updatedTemplates;
         });
     } catch (e) {
         loggingService.error("Failed to rename template in localStorage", e);
