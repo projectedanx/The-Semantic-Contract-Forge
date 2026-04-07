@@ -83,25 +83,31 @@ describe('generatePromptText', () => {
     expect(result).not.toContain('--- CONTEXT ---');
     expect(result).not.toContain('--- INSTRUCTION ---');
 
-    // Role is a bit special because of formatting, so we test it specifically.
-    // If name and description are empty, it will be `You are a "".\nDescription: ` which is NOT empty.
-    // Let's modify the PromptGenerator behavior or just test the expected output.
-    // Based on the code, `You are a "".\nDescription: ` will not be trimmed to an empty string.
+    // Role is a bit special because of formatting.
+    // If name and description are empty, the entire section should be excluded.
+    expect(result).not.toContain('--- ROLE ---');
+
+    // Output schema is also formatted.
+    // If schema is empty, the entire section should be excluded.
+    expect(result).not.toContain('--- OUTPUT SCHEMA (JSON) ---');
   });
 
   it('should exclude role section if name and description result in empty string, otherwise keep it', () => {
-    // The role formatting adds characters, so it is never perfectly empty in the current code unless changed.
-    // current code: `You are a "${data.role.name}".\nDescription: ${data.role.description}`
-    // Even if name and description are empty, it results in `You are a "".\nDescription: `
-    // Which isn't empty after trim. So we expect the role to still appear if empty.
     const emptyRoleData: PromptData = {
       ...fullPromptData,
-      role: { name: '', description: '' }
+      role: { name: '', description: '' },
     };
 
     const result = generatePromptText(emptyRoleData, 'starter');
-    expect(result).toContain('--- ROLE ---');
-    expect(result).toContain('You are a "".\nDescription:');
+    expect(result).not.toContain('--- ROLE ---');
+
+    const partiallyFilledRoleData: PromptData = {
+      ...fullPromptData,
+      role: { name: 'Assistant', description: '' },
+    };
+    const result2 = generatePromptText(partiallyFilledRoleData, 'starter');
+    expect(result2).toContain('--- ROLE ---');
+    expect(result2).toContain('You are a "Assistant".\nDescription:');
   });
 
   it('should format sections correctly with newlines', () => {
