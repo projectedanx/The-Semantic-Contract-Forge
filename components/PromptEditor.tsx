@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { PromptData, Tier, Role } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
 import RoleGenerator from './RoleGenerator';
@@ -59,15 +59,23 @@ const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
  */
 const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, currentTier, roles, onRoleGenerated }) => {
 
+  const roleMap = useMemo(() => {
+    const map = new Map<string, Role>();
+    for (let i = 0; i < roles.length; i++) {
+        map.set(roles[i].name, roles[i]);
+    }
+    return map;
+  }, [roles]);
+
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'role') {
-        const selectedRole = roles.find(r => r.name === value) || roles[0];
+        const selectedRole = roleMap.get(value) || roles[0];
         setPromptData(prev => ({ ...prev, role: selectedRole }));
     } else {
         setPromptData(prev => ({ ...prev, [name]: value }));
     }
-  }, [setPromptData, roles]);
+  }, [setPromptData, roleMap, roles]);
 
   const isProOrEnterprise = currentTier === 'pro' || currentTier === 'enterprise';
   const isEnterprise = currentTier === 'enterprise';
