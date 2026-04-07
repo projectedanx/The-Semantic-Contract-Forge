@@ -35,7 +35,7 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
     
     let schema: Record<string, unknown>;
     try {
-        const parsedSchema = JSON.parse(promptData.schema);
+        const parsedSchema = JSON.parse(promptData.schema) as Record<string, unknown>;
         if (typeof parsedSchema.type !== 'string' || typeof parsedSchema.properties !== 'object') {
             throw new Error("Schema must be a valid OpenAPI object with 'type' and 'properties'.");
         }
@@ -58,7 +58,7 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier): 
         
         const response = result.response;
         const jsonText = response.text().trim();
-        return JSON.parse(jsonText);
+        return JSON.parse(jsonText) as unknown;
 
     } catch (error) {
         loggingService.error("Gemini API Error", error);
@@ -111,13 +111,16 @@ export async function generateRole(roleDescription: string): Promise<Role> {
 
         const response = result.response;
         const jsonText = response.text().trim();
-        const parsedRole = JSON.parse(jsonText);
+        const parsedRole = JSON.parse(jsonText) as Record<string, unknown>;
 
         if (typeof parsedRole.name !== 'string' || typeof parsedRole.description !== 'string') {
             throw new Error("API returned an invalid role structure.");
         }
 
-        return parsedRole;
+        return {
+            name: parsedRole.name as string,
+            description: parsedRole.description as string
+        };
 
     } catch (error) {
         loggingService.error("Gemini Role Generation Error", error);
