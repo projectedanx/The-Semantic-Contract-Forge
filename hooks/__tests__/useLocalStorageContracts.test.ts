@@ -191,7 +191,7 @@ describe('useLocalStorageContracts', () => {
     mockGetItem.mockReturnValue(JSON.stringify([validContract, validContract2]));
     const mockSetUserError = vi.fn();
 
-    let result: any;
+    let result: { current: ReturnType<typeof useLocalStorageContracts> };
     act(() => {
       const hook = renderHook(() => useLocalStorageContracts(mockSetUserError));
       result = hook.result;
@@ -210,7 +210,7 @@ describe('useLocalStorageContracts', () => {
   it('should handle exceptions thrown by localStorage.setItem during delete', () => {
     mockGetItem.mockReturnValue(JSON.stringify([validContract]));
     const mockSetUserError = vi.fn();
-    let result: any;
+    let result: { current: ReturnType<typeof useLocalStorageContracts> };
     act(() => {
       const hook = renderHook(() => useLocalStorageContracts(mockSetUserError));
       result = hook.result;
@@ -230,5 +230,45 @@ describe('useLocalStorageContracts', () => {
 
     expect(thrownError).toBeDefined();
     expect((thrownError as Error).message).toBe("Storage error");
+  });
+
+  it('should create a new contract if saveContract is called with a non-existent ID', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validContract]));
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageContracts(mockSetUserError));
+
+    act(() => {
+      result.current.saveContract(validPromptData, 'non-existent-id', 'New Contract 2');
+    });
+
+    expect(result.current.contracts).toHaveLength(2);
+
+    // Find the newly added contract
+    const savedContract = result.current.contracts.find(c => c.name === 'New Contract 2');
+    expect(savedContract).toBeDefined();
+    expect(savedContract.id).toMatch(/^scf-\d+$/);
+    expect(savedContract.id).not.toBe('non-existent-id');
+
+    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"name":"New Contract 2"'));
+  });
+
+  it('should handle deleteContract when ID does not exist', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validContract]));
+    const mockSetUserError = vi.fn();
+
+    let result: { current: ReturnType<typeof useLocalStorageContracts> };
+    act(() => {
+      const hook = renderHook(() => useLocalStorageContracts(mockSetUserError));
+      result = hook.result;
+    });
+
+    act(() => {
+      result.current.deleteContract('non-existent-id');
+    });
+
+    expect(result.current.contracts).toHaveLength(1);
+    expect(result.current.contracts[0]).toEqual(validContract);
+
+    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, JSON.stringify([validContract]));
   });
 });
