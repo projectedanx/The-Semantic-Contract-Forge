@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { validatePromptOutput, generateRole } from '../geminiService';
+import { validatePromptOutput, generateRole, generateSchemaFromExample } from '../geminiService';
+
 import { loggingService } from '../loggingService';
 import { PromptData } from '../../types';
 
@@ -166,4 +167,50 @@ describe('geminiService', () => {
                 .rejects.toThrow('An unknown error occurred during role generation.');
         });
     });
+
+    describe('generateSchemaFromExample', () => {
+        it('should return a schema when the API call is successful', async () => {
+            const mockResponse = {
+                response: {
+                    text: vi.fn().mockReturnValue('{"type":"object"}')
+                }
+            };
+            mockGenerateContent.mockResolvedValueOnce(mockResponse);
+
+            const result = await generateSchemaFromExample('{"a": 1}', 'dummy_key');
+            expect(result).toBe('{"type":"object"}');
+            expect(mockGenerateContent).toHaveBeenCalledWith(
+                expect.stringContaining('{"a": 1}'),
+                { response_mime_type: 'application/json' }
+            );
+        });
+
+        it('should throw an error if the API key is missing', async () => {
+            await expect(generateSchemaFromExample('{"a": 1}', '')).rejects.toThrow('API Key is required.');
+        });
+
+        it('should throw an error if the generated text is not valid JSON', async () => {
+            const mockResponse = {
+                response: {
+                    text: vi.fn().mockReturnValue('invalid json')
+                }
+            };
+            mockGenerateContent.mockResolvedValueOnce(mockResponse);
+
+            await expect(generateSchemaFromExample('{"a": 1}', 'dummy_key')).rejects.toThrow('Gemini API Error: Unexpected token');
+        });
+
+        it('should handle API_KEY specific errors', async () => {
+             mockGenerateContent.mockRejectedValueOnce(new Error('API_KEY_INVALID'));
+             await expect(generateSchemaFromExample('{"a": 1}', 'dummy_key'))
+                .rejects.toThrow('Gemini API Error: Invalid or missing API Key.');
+        });
+
+        it('should handle general API errors', async () => {
+            mockGenerateContent.mockRejectedValueOnce(new Error('Service Unavailable'));
+             await expect(generateSchemaFromExample('{"a": 1}', 'dummy_key'))
+                .rejects.toThrow('Gemini API Error: Service Unavailable');
+        });
+    });
+
 });

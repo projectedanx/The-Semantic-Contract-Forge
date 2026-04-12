@@ -127,3 +127,48 @@ export async function generateRole(roleDescription: string, apiKey: string): Pro
         throw new Error("An unknown error occurred during role generation.");
     }
 }
+
+
+/**
+ * Generates a JSON schema from a user-provided JSON example.
+ *
+ * @param {string} exampleJson - A JSON string representing an example output.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @returns {Promise<string>} A promise that resolves to the generated JSON schema string.
+ * @throws {Error} Throws an error if the Gemini API call fails or if the response is invalid.
+ */
+export async function generateSchemaFromExample(exampleJson: string, apiKey: string): Promise<string> {
+    if (!apiKey) throw new Error("API Key is required.");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+        Analyze the following JSON example and generate a valid JSON Schema (Draft 7 or OpenAPI 3.0) that accurately describes its structure.
+        Return ONLY the JSON schema. Do not include markdown formatting or additional explanations.
+
+        EXAMPLE:
+        ${exampleJson}
+    `;
+
+    try {
+        const result = await model.generateContent(prompt, {
+            response_mime_type: "application/json",
+        });
+
+        const response = result.response;
+        const jsonText = response.text().trim();
+
+        // Ensure it's valid JSON
+        JSON.parse(jsonText);
+        return jsonText;
+    } catch (error) {
+        loggingService.error("Gemini Schema Generation Error", error);
+        if (error instanceof Error) {
+            if (error.message.includes('API_KEY')) {
+                throw new Error(`Gemini API Error: Invalid or missing API Key.`);
+            }
+            throw new Error(`Gemini API Error: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during schema generation.");
+    }
+}
