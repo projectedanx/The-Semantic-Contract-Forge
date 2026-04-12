@@ -30,6 +30,8 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
 -   **Advanced Editor Features:**
     -   Add syntax highlighting to the schema editor.
     -   Introduce a "diff view" to compare contract versions or changes between tiers.
+-   **Auto-Schema Generation:**
+    -   Generate JSON Schema automatically from a provided example.
 -   **"Fix Until Green" Validation Loop:**
     -   Implement a feature where a failed validation automatically triggers a new prompt asking the AI to correct its previous output based on the validation error.
 
