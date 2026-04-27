@@ -55,6 +55,7 @@ Built on the principles of **Design by Contract (DbC)**, the SCF enables develop
 The Forge is structured into tiers, offering progressively powerful features for different use cases.
 
 ### Core Features
+-   **WHIMSY — The Affective Topologist:** An enterprise-tier template (WHIMSY Injector Specification) that uses the Petzold Loop to inject measurable delight and brand-sovereign personality into digital components. It strictly enforces the Incremental Isolation Principle, outputting either a Manifold α payload (copy/content) OR a Manifold β module (CSS/JS structure), never both simultaneously. This prevents the "projection tax" while maintaining low Confidence-Fidelity Divergence Index (CFDI) values.
 
 -   **Tiered System:** Progress from basic prompts to enterprise-grade governance.
     -   **Starter Tier:** CRISP Framework templates.

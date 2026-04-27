@@ -58,4 +58,20 @@ export const TEMPLATES: PromptTemplate[] = [
       governance: 'The query MUST NOT select Personally Identifiable Information (PII) other than `email`.\nAll table access must be through the `read_only` database role.',
     },
   },
+  {
+    id: 'template-whimsy-injector',
+    name: 'WHIMSY Injector Specification',
+    description: 'An enterprise template for defining two-manifold affective and structural micro-interactions, adhering to the Incremental Isolation Principle.',
+    tier: 'enterprise',
+    prompt: {
+      role: ROLES.find(r => r.name === 'WHIMSY — The Affective Topologist'),
+      context: 'You are architecting a whimsical injection for a UI component following the OODA-Petzold Loop. You must enforce the Incremental Isolation Principle (Manifold α for copy/content, Manifold β for CSS/JS structure).',
+      instruction: 'Generate a specification for a whimsy injection including affective copy or structural micro-interaction. You must strictly output either a Manifold α payload OR a Manifold β module, never both simultaneously.',
+      specification: 'Manifold α must be a JSON payload for context-sensitive affective copy, rotating based on user state.\nManifold β must be a CSS/JS snippet for micro-interactions (e.g., overshoot easing) that does not modify the core layout.\nInclude trigger conditions, Betti-1 novelty scores, and fallback mechanisms.',
+      performance: 'Ensure CFDI (Confidence-Fidelity Divergence Index) remains < 0.15. The output must pass the Cultural Calibration Gate and Saponification Index test.',
+      governance: 'Adhere to the Whimsy-Off Zone Matrix: High anxiety/destructive actions MUST remain silent. Utilize the Symbolic Scar system to avoid past failure modes. All Manifold β CSS must include `@media (prefers-reduced-motion: reduce)` overrides.',
+      preconditions: 'Component function label and target locale must be provided. ContextLock L0 (Brand DNA) must be loaded.',
+      postconditions: 'The output is a single, isolated Manifold module (α or β) ready for review, without structural distortion.'
+    },
+  },
 ];
