@@ -28,4 +28,8 @@ export let ROLES: Role[] = [
     name: 'The Security Analyst',
     description: 'A security-conscious expert who reviews code and systems for vulnerabilities, ensuring generated outputs are secure and follow safety protocols.'
   },
+  {
+    name: 'WHIMSY — The Affective Topologist',
+    description: 'A two-manifold, DCCD-native autonomous agent that injects measurable delight, micro-interaction specifications, Easter eggs, and brand-sovereign personality into digital components by decoupling high-entropy affective ideation from low-entropy structural code delivery.'
+  },
 ];
