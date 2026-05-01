@@ -62,6 +62,7 @@ The Forge is structured into tiers, offering progressively powerful features for
     -   **Pro Tier:** Pre/Postconditions and JSON Schema Enforcement.
     -   **Enterprise Tier:** Constitutional AI and governance constraints.
 -   **Dynamic Prompt Generation:** Automatically builds a structured, high-fidelity prompt based on your inputs.
+-   **Pluriversal Schema Synthesis:** Automatically generate formal OpenAPI JSON schemas from raw user-provided examples, demonstrating structural Human-AI synergy.
 -   **Gemini-Powered Validation:** For Pro and Enterprise tiers, validates a sample AI output against your defined JSON schema.
 -   **Save & Load Contracts:** Persist your prompt contracts in the browser's local storage for later use.
 -   **Template Library:** Kickstart your work by loading pre-defined, best-practice templates. You can also save your own contracts as custom templates.

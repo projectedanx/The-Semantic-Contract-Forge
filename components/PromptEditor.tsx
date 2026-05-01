@@ -3,6 +3,7 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { PromptData, Tier, Role } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
 import RoleGenerator from './RoleGenerator';
+import SchemaSynthesizer from './SchemaSynthesizer';
 import { generateRole } from '../services/geminiService';
 
 /**
@@ -137,6 +138,13 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
 
       <Section title="JSON Output Schema" description="Enforce a specific JSON structure for the output (Pro Tier)." isLocked={!isProOrEnterprise}>
         <textarea name="schema" value={promptData.schema} onChange={handleChange} disabled={!isProOrEnterprise} className="w-full p-2 bg-slate-900 border font-mono text-sm border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" rows={8} />
+        {isProOrEnterprise && (
+            <SchemaSynthesizer
+                apiKey={apiKey}
+                tier={currentTier}
+                onSchemaGenerated={(schema) => setPromptData(prev => ({ ...prev, schema }))}
+            />
+        )}
       </Section>
 
       <Section title="Governance" description="Constitutional principles and safety constraints (Enterprise Tier)." isLocked={!isEnterprise}>
