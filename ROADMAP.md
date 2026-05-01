@@ -65,3 +65,5 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
     -   Provide tools for users to rigorously test different prompt variations.
 -   **Multi-Model Support:**
     -   Integrate with other leading LLMs to allow users to test their contracts for cross-model compatibility.
+### Delivered
+- **Human-AI Synergy Analyzer**: Integrated a TACT lens evaluation to surface human/AI affordances and constraints.

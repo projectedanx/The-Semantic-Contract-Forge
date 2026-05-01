@@ -41,10 +41,7 @@ export async function validatePromptOutput(promptData: PromptData, tier: Tier, a
     const fullContent = `${fullPrompt}\n\n--- USER REQUEST ---\n${userRequest}`;
 
     try {
-        const result = await model.generateContent(fullContent, {
-            response_mime_type: "application/json",
-            response_schema: schema,
-        });
+        const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: fullContent }] }], generationConfig: { responseMimeType: "application/json", responseSchema: schema as unknown as import("@google/generative-ai").ResponseSchema } });
         
         const response = result.response;
         const jsonText = response.text().trim();
@@ -98,10 +95,7 @@ export async function generateRole(roleDescription: string, apiKey: string): Pro
     `;
 
     try {
-        const result = await model.generateContent(prompt, {
-            response_mime_type: "application/json",
-            response_schema: roleSchema,
-        });
+        const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: roleSchema as unknown as import("@google/generative-ai").ResponseSchema } });
 
         const response = result.response;
         const jsonText = response.text().trim();
@@ -151,9 +145,7 @@ export async function generateSchemaFromExample(exampleJson: string, apiKey: str
     `;
 
     try {
-        const result = await model.generateContent(prompt, {
-            response_mime_type: "application/json",
-        });
+        const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } });
 
         const response = result.response;
         const jsonText = response.text().trim();
@@ -170,5 +162,77 @@ export async function generateSchemaFromExample(exampleJson: string, apiKey: str
             throw new Error(`Gemini API Error: ${error.message}`);
         }
         throw new Error("An unknown error occurred during schema generation.");
+    }
+}
+
+/**
+ * Evaluates the human-AI synergy of a prompt contract using the TACT (Technology Affordance and Constraints Theory) lens.
+ *
+ * @param {PromptData} promptData - The data object for the prompt contract.
+ * @param {string} apiKey - The user's Gemini API key.
+ * @returns {Promise<unknown>} A promise that resolves to the parsed SynergyAnalysis JSON object.
+ * @throws {Error} Throws an error if the API key is missing, or if the Gemini API call fails.
+ */
+export async function analyzeSynergy(promptData: PromptData, apiKey: string): Promise<unknown> {
+    if (!apiKey) throw new Error("API Key is required.");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const synergySchema = {
+        type: "object",
+        properties: {
+            humanAffordances: {
+                type: "array",
+                items: { type: "string" },
+                description: "List of explicit values the human provides that the AI cannot (e.g., local context, ethical judgment, strategic intent)."
+            },
+            aiAffordances: {
+                type: "array",
+                items: { type: "string" },
+                description: "List of explicit values the AI provides that the human cannot scale (e.g., pattern synthesis across millions of files, high-speed computational geometry)."
+            },
+            operationalConstraints: {
+                type: "array",
+                items: { type: "string" },
+                description: "List of constraints or tensions identified between the human's unstructured workflow and the AI's deterministic logic."
+            },
+            synergyScore: {
+                type: "number",
+                description: "A numerical score (0-100) representing the orthogonality and complementary nature of the Human/AI responsibilities defined in the contract."
+            }
+        },
+        required: ["humanAffordances", "aiAffordances", "operationalConstraints", "synergyScore"]
+    };
+
+    const promptText = generatePromptText(promptData, 'enterprise'); // Always use enterprise tier to see all fields for analysis
+
+    const prompt = `
+        Analyze the following Prompt Contract using the Technology Affordance and Constraints Theory (TACT) lens.
+        Determine exactly what value the Human is bringing to this workflow, and what value the AI is bringing.
+        Identify where neither can operate alone. Identify the operational friction or constraints present in the task.
+        Return the analysis strictly conforming to the provided JSON schema.
+
+        PROMPT CONTRACT:
+        ${promptText}
+    `;
+
+    try {
+        const result = await model.generateContent({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: synergySchema as unknown as import("@google/generative-ai").ResponseSchema } });
+
+        const response = result.response;
+        const jsonText = response.text().trim();
+        const parsedSynergy = JSON.parse(jsonText) as unknown;
+
+        return parsedSynergy;
+
+    } catch (error) {
+        loggingService.error("Gemini Synergy Analysis Error", error);
+        if (error instanceof Error) {
+            if (error.message.includes('API_KEY')) {
+                throw new Error(`Gemini API Error: Invalid or missing API Key.`);
+            }
+            throw new Error(`Gemini API Error: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred during synergy analysis.");
     }
 }
