@@ -101,3 +101,5 @@ The Forge is structured into tiers, offering progressively powerful features for
 -   **Product-Requirements Prompt (PRP):** A highly-structured prompt that serves as an executable specification for an AI's task, detailing not just *what* to do, but the *conditions* and *constraints* under which it must operate.
 -   **Design by Contract (DbC):** A software design methodology that uses preconditions, postconditions, and invariants to ensure code correctness. SCF applies this principle to prompt engineering.
 -   **Semantic Integrity Constraints (SICs):** Rules embedded within a prompt that mandate adherence to specific standards, such as using only approved UI components or following a coding style guide.
+## New Feature: Human-AI Synergy Analyzer (TACT Lens)
+The platform now includes an Enterprise-tier feature that applies the Technology Affordance and Constraints Theory (TACT). It analyzes the prompt contract to evaluate the structural analogy mapping of responsibilities between human judgment and AI deterministic execution. This helps identify where neither can operate alone and surfaces operational friction and constraints.

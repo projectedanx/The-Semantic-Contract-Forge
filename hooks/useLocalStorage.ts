@@ -36,7 +36,7 @@ export function useLocalStorage<T, S = T>(
         if (validator(parsed)) {
           setStoredValue(parser ? parser(parsed) : (parsed as unknown as T));
         } else {
-          loggingService.error(`Invalid data in localStorage for key ${key}`);
+          loggingService.error(`Invalid data in localStorage for key ${key}`, new Error("Invalid data in localStorage for key " + key));
           setUserError(errorMessages.invalidData);
         }
       }

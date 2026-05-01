@@ -54,3 +54,21 @@ export interface PromptTemplate {
   tier: Tier;
   prompt: Partial<PromptData>;
 }
+
+/**
+ * Represents the structured analysis of Human-AI synergy within a prompt contract.
+ */
+export interface SynergyAnalysis {
+  humanAffordances: string[];
+  aiAffordances: string[];
+  operationalConstraints: string[];
+  synergyScore: number;
+}
+
+/**
+ * Represents the outcome of a synergy analysis attempt.
+ * It's a discriminated union type.
+ */
+export type SynergyResult =
+  | { success: true; data: SynergyAnalysis }
+  | { success: false; error: string };

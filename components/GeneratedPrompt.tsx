@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ValidationResult, Tier } from '../types';
+import { ValidationResult, Tier, PromptData } from '../types';
 import { CopyIcon } from './icons/CopyIcon';
 import { CheckIcon } from './icons/CheckIcon';
 import { ShieldCheckIcon } from './icons/ShieldCheckIcon';
+import SynergyAnalyzer from './SynergyAnalyzer';
 
 /**
  * @interface GeneratedPromptProps
@@ -14,6 +15,8 @@ import { ShieldCheckIcon } from './icons/ShieldCheckIcon';
  * @property {Tier} tier - The user's current tier, which determines if validation is available.
  */
 interface GeneratedPromptProps {
+  promptData: PromptData;
+  apiKey: string;
   promptText: string;
   onValidate: () => Promise<void>;
   isLoading: boolean;
@@ -28,7 +31,7 @@ interface GeneratedPromptProps {
  * @param {GeneratedPromptProps} props - The props for the component.
  * @returns {React.ReactElement} The rendered component for displaying and validating the generated prompt.
  */
-const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidate, isLoading, validationResult, tier }) => {
+const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidate, isLoading, validationResult, tier, promptData, apiKey }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -88,6 +91,7 @@ const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidat
             )}
           </div>
         )}
+        <SynergyAnalyzer promptData={promptData} apiKey={apiKey} tier={tier} />
       </div>
     </div>
   );

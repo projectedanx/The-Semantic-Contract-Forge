@@ -217,6 +217,8 @@ function App() {
                 isLoading={isLoading}
                 validationResult={validationResult}
                 tier={currentTier}
+                promptData={promptData}
+                apiKey={apiKey}
               />
             </div>
           </div>

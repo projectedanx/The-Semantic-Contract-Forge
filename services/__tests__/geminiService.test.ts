@@ -179,10 +179,10 @@ describe('geminiService', () => {
 
             const result = await generateSchemaFromExample('{"a": 1}', 'dummy_key');
             expect(result).toBe('{"type":"object"}');
-            expect(mockGenerateContent).toHaveBeenCalledWith(
-                expect.stringContaining('{"a": 1}'),
-                { response_mime_type: 'application/json' }
-            );
+            expect(mockGenerateContent).toHaveBeenCalledWith({
+                    contents: [{ role: 'user', parts: [{ text: expect.stringContaining('{"a": 1}') }] }],
+                    generationConfig: { responseMimeType: 'application/json' }
+                });
         });
 
         it('should throw an error if the API key is missing', async () => {
