@@ -67,3 +67,20 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
     -   Integrate with other leading LLMs to allow users to test their contracts for cross-model compatibility.
 ### Delivered
 - **Human-AI Synergy Analyzer**: Integrated a TACT lens evaluation to surface human/AI affordances and constraints.
+
+---
+
+### 🔬 Phase 5: Project Aurelius (Meta-Architect Intelligence)
+
+*Goal: Move beyond associative generation to explicit, causal control over high-dimensional latent space and spatial topologies.*
+
+-   **Non-Euclidean API Integration:**
+    -   Extend `PromptData` schema to include explicit geometric constraints (`GeometricConstraints`) such as manifold types and curvature.
+    -   Develop UI interfaces for architects to input topological rules directly into the contract.
+-   **Agentic Auto-Optimization (Plausibility Oracle):**
+    -   Build an autonomous loop that validates AI output against physical laws (proxying ray-tracing/PBR validation).
+    -   Implement iterative self-correction mechanisms to refine prompts based on physical plausibility scores.
+-   **Dynamic Provenance & Debias Tracking:**
+    -   Track the influence of specific training biases and use "Attribution Amplification" to explicitly suppress incorrect visual correlations in favor of user-defined geometry.
+-   **Cross-Modal Perceptual Fusion Prototype:**
+    -   Lay groundwork for specifying materials via spectral reflectance rather than RGB.

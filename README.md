@@ -104,3 +104,13 @@ The Forge is structured into tiers, offering progressively powerful features for
 -   **Semantic Integrity Constraints (SICs):** Rules embedded within a prompt that mandate adherence to specific standards, such as using only approved UI components or following a coding style guide.
 ## New Feature: Human-AI Synergy Analyzer (TACT Lens)
 The platform now includes an Enterprise-tier feature that applies the Technology Affordance and Constraints Theory (TACT). It analyzes the prompt contract to evaluate the structural analogy mapping of responsibilities between human judgment and AI deterministic execution. This helps identify where neither can operate alone and surfaces operational friction and constraints.
+
+---
+
+## 🔬 Advanced Research: Project Aurelius (Meta-Architect Intelligence)
+
+The Semantic Contract Forge serves as the foundation for **Project Aurelius**, an experimental initiative aimed at bridging the causal intent gap in generative AI, specifically regarding non-Euclidean spatial reasoning.
+
+While current diffusion models rely on visual correlations (the "statistical smudge"), Project Aurelius seeks to invert this paradigm. By encoding explicit geometric and physical rules (e.g., manifold topologies, Gaussian curvature) as **Semantic Integrity Constraints (SICs)** within prompt contracts, we force the AI to act as a deterministic geometry engine rather than a mere image generator.
+
+This initiative also explores an **Agentic Auto-Optimization** loop (a "Plausibility Oracle") to provide continuous feedback on physical realism, and advanced material specifications targeting cross-modal perceptual fusion. For details, see the `project_aurelius` directory.
