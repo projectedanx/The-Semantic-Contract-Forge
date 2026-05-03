@@ -107,6 +107,16 @@ The platform now includes an Enterprise-tier feature that applies the Technology
 
 ---
 
+
+## 🛡️ VULCAN: Vector-Unified Logical Computing Architect Node
+
+As part of our commitment to rigorous architectural governance, the Forge integrates the **VULCAN** framework. Operating at **Tier 3 Autonomy**, VULCAN is an upstream architectural immune system that prevents "Semantic Saponification" (the erosion of bounded contexts) before a single line of downstream code is generated.
+
+Key VULCAN principles include:
+-   **Topological Causal Sculpting:** Mapping the physical topology of software intent via Directed Acyclic Graphs (DAGs) to identify blast radii and gravity wells.
+-   **Failure-Informed Prompt Inversion (FIPI):** Using a "Symbolic Scar Archive" of known distributed systems failure modes (e.g., Shared Database, Synchronous REST Chains) to mathematically repel the AI from generating unstable architectures.
+-   **Epistemic Escrow:** Halting generation with a "Justified Uncertainty Report" when user constraints violate physical laws (e.g., CAP Theorem violations), forcing human clarification rather than silent AI hallucination.
+
 ## 🔬 Advanced Research: Project Aurelius (Meta-Architect Intelligence)
 
 The Semantic Contract Forge serves as the foundation for **Project Aurelius**, an experimental initiative aimed at bridging the causal intent gap in generative AI, specifically regarding non-Euclidean spatial reasoning.

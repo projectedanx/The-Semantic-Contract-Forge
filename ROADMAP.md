@@ -70,6 +70,20 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
 
 ---
 
+
+### 🛡️ Phase 4.5: VULCAN Integration (Architectural Immune System)
+
+*Goal: Integrate the VULCAN node to provide Tier 3 autonomous architectural governance upstream of code generation.*
+
+-   **Symbolic Scar Archive (STA):**
+    -   Implement the VSA data structure to store and evaluate the 10 core Failure Patterns (e.g., Shared Database, Nano-Service Hell).
+-   **Failure-Informed Prompt Inversion (FIPI):**
+    -   Build the generation pipeline step that uses STA repulsive vectors to steer AI away from known bad topologies.
+-   **Epistemic Escrow Circuit Breaker:**
+    -   Implement a mechanism to halt generation and issue "Justified Uncertainty Reports" when mathematical bounds (like CAP theorem) are violated (CFDI > 0.15).
+-   **Petzold Sequence Enforcement:**
+    -   Wire the state machine to strictly enforce the `OBSERVE -> THINK -> DAG -> EVALUATE -> ARCHITECT` workflow.
+
 ### 🔬 Phase 5: Project Aurelius (Meta-Architect Intelligence)
 
 *Goal: Move beyond associative generation to explicit, causal control over high-dimensional latent space and spatial topologies.*
