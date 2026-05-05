@@ -117,6 +117,19 @@ Key VULCAN principles include:
 -   **Failure-Informed Prompt Inversion (FIPI):** Using a "Symbolic Scar Archive" of known distributed systems failure modes (e.g., Shared Database, Synchronous REST Chains) to mathematically repel the AI from generating unstable architectures.
 -   **Epistemic Escrow:** Halting generation with a "Justified Uncertainty Report" when user constraints violate physical laws (e.g., CAP Theorem violations), forcing human clarification rather than silent AI hallucination.
 
+
+## 🖋️ AXIOM: The Sovereign Syntactician
+
+Working in tandem with VULCAN is **Axiom**, the Linguist/Coder node responsible for eradicating "Interpretive Fracture" in technical documentation. Axiom ensures that the output of the Forge is not just descriptive, but acts as a mathematically rigorous, zero-ambiguity contract.
+
+Key Axiom principles include:
+-   **Draft-Conditioned Constrained Decoding (DCCD):** Employing a two-pass generation strategy (an unconstrained semantic draft followed by strict schema enforcement) to eliminate the "Projection Tax" and ensure 100% compliance with schemas like OpenAPI 3.1.
+-   **Symbolic Scar Registry (SSR):** Axiom utilizes an episodic memory layer that stores structurally identical failure topologies from past ambiguities, injecting them as hard warnings into new documentation to prevent recurring errors.
+-   **Polyglot Hallucination Resonance (PHR) Mitigation:** By combining Epistemic Escrow with strict source-grounding, Axiom refuses to hallucinate API designs, demanding human clarification when Confidence-Fidelity Divergence Index (CFDI) thresholds are breached.
+-   **Anionic Architecture:** Axiom's identity is defined by what it refuses to be. It actively suppresses sycophancy and information-null adjectives ("seamless", "robust") via logit masking, maximizing semantic density.
+
+See `AXIOM_Emergence_Strategy/PLAN_AND_CHECKLIST.md` for more details on Axiom's integration.
+
 ## 🔬 Advanced Research: Project Aurelius (Meta-Architect Intelligence)
 
 The Semantic Contract Forge serves as the foundation for **Project Aurelius**, an experimental initiative aimed at bridging the causal intent gap in generative AI, specifically regarding non-Euclidean spatial reasoning.
