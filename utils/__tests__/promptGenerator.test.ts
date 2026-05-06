@@ -113,13 +113,56 @@ describe('generatePromptText', () => {
   it('should format sections correctly with newlines', () => {
     const data: PromptData = {
       ...fullPromptData,
-      context: 'Line 1\nLine 2',
+      context: 'Line 1\\nLine 2',
       role: { name: 'Role', description: 'Desc' }
     };
     const result = generatePromptText(data, 'starter');
 
-    expect(result).toContain('--- CONTEXT ---\nLine 1\nLine 2');
-    // Ensure separate sections are separated by \n\n
+    expect(result).toContain('--- CONTEXT ---\nLine 1\\nLine 2');
+    // Ensure separate sections are separated by \\n\\n
     expect(result).toContain('\n\n--- ROLE ---');
+  });
+});
+
+describe('VIPER generatePromptText', () => {
+  const viperData: PromptData = {
+    context: 'Generate a scene',
+    role: { name: 'V.I.P.E.R.', description: 'The Gaffer' },
+    instruction: 'Create an image',
+    specification: 'A person standing in a room with a 50mm lens and kino lighting.',
+    performance: '',
+    preconditions: '',
+    postconditions: '',
+    schema: '',
+    governance: ''
+  };
+
+  it('should generate OSM when compliant', () => {
+    const result = generatePromptText(viperData, 'enterprise');
+    expect(result).toContain('[OPTICAL STATE MATRIX');
+    expect(result).toContain('HGI_Final');
+    expect(result).toContain('50mm lens'); // it replaces newlines, but keeps content
+  });
+
+  it('should reject banned tokens and return diagnostic', () => {
+    const badData: PromptData = {
+      ...viperData,
+      specification: 'A beautiful and cinematic person standing in a room.'
+    };
+    const result = generatePromptText(badData, 'enterprise');
+    expect(result).toContain('[DIAGNOSTIC // VIPER-GAFFER');
+    expect(result).toContain('Tokens_Rejected');
+    expect(result).toContain('beautiful');
+    expect(result).toContain('cinematic');
+  });
+
+  it('should fail HGI if no hardware parameters', () => {
+    const badData: PromptData = {
+      ...viperData,
+      specification: 'A person standing in a room.' // No lens, lighting, etc.
+    };
+    const result = generatePromptText(badData, 'enterprise');
+    expect(result).toContain('NON-COMPLIANT');
+    expect(result).toContain('Specify at least one hardware parameter');
   });
 });
