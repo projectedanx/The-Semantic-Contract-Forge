@@ -1,31 +1,37 @@
 import React from 'react';
 
 /**
- * @interface ConfirmationModalProps
- * @description Props for the ConfirmationModal component.
- * @property {boolean} isOpen - Whether the modal is open.
- * @property {() => void} onClose - Function to call when the modal is closed.
- * @property {() => void} onConfirm - Function to call when the confirm button is clicked.
- * @property {string} title - The title of the modal.
- * @property {string} message - The message to display in the modal.
- * @property {string} [confirmText] - The text for the confirm button. Defaults to 'Confirm'.
- * @property {string} [cancelText] - The text for the cancel button. Defaults to 'Cancel'.
+ * @file components/ConfirmationModal.tsx
+ * @description Provides a reusable, accessible modal dialog for confirming destructive
+ * or critical actions before they are executed.
  */
-interface ConfirmationModalProps {
+
+/**
+ * Props for the ConfirmationModal component.
+ */
+export interface ConfirmationModalProps {
+  /** Indicates whether the modal should be visible on screen. */
   isOpen: boolean;
+  /** Callback fired when the user clicks the cancel button or dismisses the modal. */
   onClose: () => void;
+  /** Callback fired when the user explicitly clicks the confirm button. */
   onConfirm: () => void;
+  /** The primary heading text displayed at the top of the modal. */
   title: string;
+  /** The detailed explanatory text informing the user of the consequences. */
   message: string;
+  /** Optional custom text for the confirm button. Defaults to 'Confirm'. */
   confirmText?: string;
+  /** Optional custom text for the cancel button. Defaults to 'Cancel'. */
   cancelText?: string;
 }
 
 /**
- * @component ConfirmationModal
- * @description A reusable modal component to confirm user actions.
- * @param {ConfirmationModalProps} props - The props for the component.
- * @returns {React.ReactElement | null} A modal dialog for confirming an action, or null if not open.
+ * A reusable React modal component to confirm user actions. It uses a fixed overlay
+ * and manages focus implicitly by occupying the center of the viewport.
+ *
+ * @param {ConfirmationModalProps} props - Configuration options and callbacks for the modal.
+ * @returns {React.ReactElement | null} The modal dialog element, or null if `isOpen` is false.
  */
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel' }) => {
   if (!isOpen) return null;

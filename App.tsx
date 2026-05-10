@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useCallback } from 'react';
 import Header from './components/Header';
 import TierSelector from './components/TierSelector';
@@ -15,8 +14,15 @@ import { useLocalStorageTemplates } from './hooks/useLocalStorageTemplates';
 import TemplateLibraryModal from './components/TemplateLibraryModal';
 
 /**
+ * @file App.tsx
+ * @description The root component of the Semantic Contract Forge. Orchestrates global state,
+ * manages the Bring Your Own Key (BYOK) lifecycle, and binds the modular UI components together.
+ */
+
+/**
  * @const {string} DEFAULT_SCHEMA
- * @description The default JSON schema for prompt outputs.
+ * @description A fallback JSON schema used when initializing a new prompt editor state.
+ * Specifies a basic file-generation structure.
  */
 const DEFAULT_SCHEMA = JSON.stringify({
   type: "object",
@@ -35,7 +41,8 @@ const DEFAULT_SCHEMA = JSON.stringify({
 
 /**
  * @const {PromptData} INITIAL_PROMPT_DATA
- * @description The initial state for the prompt editor when the application loads or a new contract is created.
+ * @description The initial scaffold state for the prompt editor when the application loads
+ * or when a user clicks "New Contract".
  */
 const INITIAL_PROMPT_DATA: PromptData = {
   context: 'You are building a component for an e-commerce dashboard.',
@@ -50,25 +57,24 @@ const INITIAL_PROMPT_DATA: PromptData = {
 };
 
 /**
- * @interface AppContextType
- * @description The shape of the context provided by the App component.
- * @property {() => void} onOpenTemplateLibrary - Function to open the template library modal.
+ * Defines the shape of the global React Context used to bypass prop-drilling
+ * for top-level UI actions (like opening modals from nested headers).
  */
-interface AppContextType {
+export interface AppContextType {
+  /** Callback to open the global Template Library modal. */
   onOpenTemplateLibrary: () => void;
 }
 
 /**
- * @const {React.Context<AppContextType | null>} AppContext
- * @description React context to provide application-level actions to nested components.
+ * Global React context providing application-level actions to nested components.
  */
 export const AppContext = React.createContext<AppContextType | null>(null);
 
 /**
- * @component App
- * @description The main component of the application. It orchestrates the entire UI and manages the application's state,
- * including the current tier, prompt data, validation results, and user-saved contracts and templates.
- * @returns {React.ReactElement} The rendered application.
+ * The core application container. Manages all primary state including user tier,
+ * active editor data, persistence coordination, and Gemini API keys.
+ *
+ * @returns {React.ReactElement} The mounted application root.
  */
 function App() {
   const [currentTier, setCurrentTier] = useState<Tier>('starter');
@@ -79,13 +85,24 @@ function App() {
   const [activeContract, setActiveContract] = useState<SavedPromptContract | null>(null);
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
   const [roles, setRoles] = useState<Role[]>(ROLES);
+
+  // Bring Your Own Key (BYOK) state initialization from local storage
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem('gemini_api_key') || '');
 
+  // Hook integrations for persistent storage
   const { contracts, saveContract, deleteContract } = useLocalStorageContracts(setUserError);
   const { templates, saveTemplate, renameTemplate, deleteTemplate } = useLocalStorageTemplates(setUserError);
   
+  /**
+   * Memoized derivation of the final text prompt from the current editor state and tier.
+   */
   const generatedPromptText = useMemo(() => generatePromptText(promptData, currentTier), [promptData, currentTier]);
   
+  /**
+   * Initiates the schema validation process by calling the Gemini service.
+   * Handles loading states, error surfacing, and result storage.
+   * @returns {Promise<void>}
+   */
   const handleValidate = async () => {
     if (!apiKey) {
       setUserError("Please enter your Gemini API Key.");
@@ -99,141 +116,209 @@ function App() {
       setValidationResult({ success: true, data: result });
       loggingService.info("Validation successful", result);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An unknown validation error occurred.";
+      const message = error instanceof Error ? error.message : 'Validation failed.';
       setValidationResult({ success: false, error: message });
       setUserError(message);
-      loggingService.error("Validation failed", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleNew = useCallback(() => {
-    setPromptData(INITIAL_PROMPT_DATA);
-    setActiveContract(null);
-    setValidationResult(null);
-  }, []);
-
-  const handleSaveError = useCallback((e: unknown, defaultMessage: string) => {
-    const message = e instanceof Error ? e.message : defaultMessage;
-    setUserError(message);
-    throw e;
-  }, []);
-
-  const handleSave = useCallback((data: PromptData, id: string | null, name: string): SavedPromptContract => {
-    try {
-      const saved = saveContract(data, id, name);
-      setActiveContract(saved);
-      return saved;
-    } catch (e) {
-      handleSaveError(e, "Failed to save contract.");
-    }
-  }, [saveContract, handleSaveError]);
-
-  const handleSaveTemplate = useCallback((data: PromptData, name: string): PromptTemplate => {
-    try {
-      const saved = saveTemplate(data, name);
-      // Maybe show a confirmation toast?
-      return saved;
-    } catch (e) {
-      handleSaveError(e, "Failed to save template.");
-    }
-  }, [saveTemplate, handleSaveError]);
-
-  const handleLoad = useCallback((contract: SavedPromptContract) => {
-    setPromptData(contract);
-    setActiveContract(contract);
-  }, []);
-
-  const handleDelete = useCallback((id: string) => {
-    deleteContract(id);
-    if (activeContract?.id === id) {
-      handleNew();
-    }
-  }, [activeContract, deleteContract, handleNew]);
-
-  const handleOpenTemplateLibrary = () => {
-    setIsTemplateLibraryOpen(true);
+  /**
+   * Updates the global API key state and persists it to local storage.
+   * @param {string} newKey - The new Gemini API key.
+   * @returns {void}
+   */
+  const handleApiKeyChange = (newKey: string) => {
+    setApiKey(newKey);
+    localStorage.setItem('gemini_api_key', newKey);
   };
 
-  const handleTemplateSelect = (template: PromptTemplate) => {
+  /**
+   * Persists the current editor state as a contract in local storage.
+   *
+   * @param {PromptData} data - The editor data payload.
+   * @param {string | null} id - The ID of the contract to overwrite, or null to create new.
+   * @param {string} name - The human-readable name of the contract.
+   * @returns {SavedPromptContract | undefined} The saved contract, or undefined if save failed.
+   */
+  const handleSaveContract = useCallback((data: PromptData, id: string | null, name: string) => {
+      try {
+          const saved = saveContract(data, id, name);
+          setActiveContract(saved);
+          return saved;
+      } catch (e) {
+          // Error is handled by the hook and set in userError
+      }
+  }, [saveContract]);
+
+  /**
+   * Loads an existing contract from local storage into the editor.
+   *
+   * @param {SavedPromptContract} contract - The contract object to load.
+   * @returns {void}
+   */
+  const handleLoadContract = useCallback((contract: SavedPromptContract) => {
+      setPromptData({
+          context: contract.context,
+          role: contract.role,
+          instruction: contract.instruction,
+          specification: contract.specification,
+          performance: contract.performance,
+          preconditions: contract.preconditions,
+          postconditions: contract.postconditions,
+          schema: contract.schema,
+          governance: contract.governance,
+      });
+      setActiveContract(contract);
+      setValidationResult(null);
+  }, []);
+
+  /**
+   * Deletes a contract and clears the editor if the deleted contract was active.
+   *
+   * @param {string} id - The ID of the contract to delete.
+   * @returns {void}
+   */
+  const handleDeleteContract = useCallback((id: string) => {
+      try {
+          deleteContract(id);
+          if (activeContract?.id === id) {
+              setActiveContract(null);
+              setPromptData(INITIAL_PROMPT_DATA);
+              setValidationResult(null);
+          }
+      } catch(e) {
+           // Error is handled by the hook
+      }
+  }, [deleteContract, activeContract]);
+
+  /**
+   * Resets the editor to a blank slate, clearing the active contract.
+   * @returns {void}
+   */
+  const handleNewContract = useCallback(() => {
+      setActiveContract(null);
+      setPromptData(INITIAL_PROMPT_DATA);
+      setValidationResult(null);
+  }, []);
+
+  /**
+   * Saves the current editor state as a reusable template.
+   *
+   * @param {PromptData} data - The editor state to save.
+   * @param {string} name - The display name for the template.
+   * @returns {void}
+   */
+  const handleSaveTemplate = useCallback((data: PromptData, name: string) => {
+      try {
+          saveTemplate(data, name);
+          setUserError(null);
+      } catch (e) {
+         // Error handled by hook
+      }
+  }, [saveTemplate]);
+
+  /**
+   * Loads a template into the editor, adjusting the active tier if necessary.
+   *
+   * @param {PromptTemplate} template - The template to apply.
+   * @returns {void}
+   */
+  const handleLoadTemplate = useCallback((template: PromptTemplate) => {
+    // Determine the highest tier between the current tier and the template's required tier
+    const tierLevels = { starter: 0, pro: 1, enterprise: 2 };
+    if (tierLevels[template.tier] > tierLevels[currentTier]) {
+        setCurrentTier(template.tier);
+    }
+
     setPromptData(prev => ({
-        ...INITIAL_PROMPT_DATA,
-        ...template.prompt,
-        role: template.prompt.role || roles[0],
+        ...prev,
+        ...template.prompt
     }));
-    setActiveContract(null);
-    setIsTemplateLibraryOpen(false);
-  };
 
-  const handleRoleGenerated = (newRole: Role) => {
-    const updatedRoles = [newRole, ...roles];
-    setRoles(updatedRoles);
-    setPromptData(prev => ({ ...prev, role: newRole }));
-  };
+    setIsTemplateLibraryOpen(false);
+    setActiveContract(null); // Loading a template clears the active contract state
+    setValidationResult(null);
+  }, [currentTier]);
   
+  const contextValue = useMemo(() => ({
+    onOpenTemplateLibrary: () => setIsTemplateLibraryOpen(true),
+  }), []);
+
   return (
-    <AppContext.Provider value={{ onOpenTemplateLibrary: handleOpenTemplateLibrary }}>
-      <div className="bg-slate-900 min-h-screen text-slate-300 font-sans">
+    <AppContext.Provider value={contextValue}>
+        <div className="min-h-screen bg-slate-900 text-slate-300 font-inter pb-24 selection:bg-cyan-500/30">
         <Header
-          contracts={contracts}
-          activeContract={activeContract}
-          onSave={handleSave}
-          onLoad={handleLoad}
-          onDelete={handleDelete}
-          onNew={handleNew}
-          promptData={promptData}
-          onSaveTemplate={handleSaveTemplate}
+            contracts={contracts}
+            activeContract={activeContract}
+            onSave={handleSaveContract}
+            onLoad={handleLoadContract}
+            onDelete={handleDeleteContract}
+            onNew={handleNewContract}
+            promptData={promptData}
+            onSaveTemplate={handleSaveTemplate}
         />
-        <main className="container mx-auto p-4 md:p-8">
-          <div className="space-y-8">
-            <div className="bg-slate-800/30 p-6 rounded-lg border border-slate-700">
-              <label className="block text-lg font-semibold text-slate-100 mb-2">Gemini API Key</label>
-              <input
-                type="password"
-                placeholder="Enter your Gemini API Key..."
-                value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
-                  localStorage.setItem('gemini_api_key', e.target.value);
-                }}
-                className="w-full p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition"
-              />
-              <p className="text-sm text-slate-400 mt-2">Required for validating JSON schemas and generating roles.</p>
+
+        <main className="container mx-auto px-4 py-8">
+            <div className="mb-8 p-4 bg-slate-800/50 border border-slate-700 rounded-lg flex items-center justify-between">
+                <div className="flex-grow max-w-xl">
+                    <label htmlFor="apiKey" className="block text-sm font-semibold text-slate-300 mb-1">Google Gemini API Key (BYOK)</label>
+                    <input
+                        type="password"
+                        id="apiKey"
+                        value={apiKey}
+                        onChange={(e) => handleApiKeyChange(e.target.value)}
+                        placeholder="AIzaSy..."
+                        className="w-full p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition font-mono text-sm"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Your key is stored locally in your browser and never sent to our servers.</p>
+                </div>
             </div>
+
+            <div className="mb-12">
+            <h2 className="text-xl font-bold mb-4 text-slate-100 border-b border-slate-700 pb-2">Select Tier & Features</h2>
             <TierSelector currentTier={currentTier} setTier={setCurrentTier} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-              <PromptEditor
-                promptData={promptData}
-                setPromptData={setPromptData}
-                currentTier={currentTier}
-                roles={roles}
-                onRoleGenerated={handleRoleGenerated}
-                apiKey={apiKey}
-              />
-              <GeneratedPrompt
-                promptText={generatedPromptText}
-                onValidate={handleValidate}
-                isLoading={isLoading}
-                validationResult={validationResult}
-                tier={currentTier}
-                promptData={promptData}
-                apiKey={apiKey}
-              />
             </div>
-          </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <PromptEditor
+                    promptData={promptData}
+                    setPromptData={setPromptData}
+                    currentTier={currentTier}
+                    roles={roles}
+                    onRoleGenerated={(newRole) => setRoles(prev => [...prev, newRole])}
+                    apiKey={apiKey}
+                />
+            </div>
+
+            <div>
+                <GeneratedPrompt
+                    promptData={promptData}
+                    apiKey={apiKey}
+                    promptText={generatedPromptText}
+                    onValidate={handleValidate}
+                    isLoading={isLoading}
+                    validationResult={validationResult}
+                    tier={currentTier}
+                />
+            </div>
+            </div>
         </main>
+
         <TemplateLibraryModal
-          isOpen={isTemplateLibraryOpen}
-          onClose={() => setIsTemplateLibraryOpen(false)}
-          onSelect={handleTemplateSelect}
-          templates={templates}
-          currentTier={currentTier}
-          onRenameTemplate={renameTemplate}
-          onDeleteTemplate={deleteTemplate}
+            isOpen={isTemplateLibraryOpen}
+            onClose={() => setIsTemplateLibraryOpen(false)}
+            onSelect={handleLoadTemplate}
+            templates={templates}
+            currentTier={currentTier}
+            onRenameTemplate={renameTemplate}
+            onDeleteTemplate={deleteTemplate}
         />
+
         <ErrorToast message={userError} onDismiss={() => setUserError(null)} />
-      </div>
+        </div>
     </AppContext.Provider>
   );
 }

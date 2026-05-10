@@ -6,34 +6,48 @@ import { ShieldCheckIcon } from './icons/ShieldCheckIcon';
 import SynergyAnalyzer from './SynergyAnalyzer';
 
 /**
- * @interface GeneratedPromptProps
- * @description Props for the GeneratedPrompt component.
- * @property {string} promptText - The text of the generated prompt to be displayed.
- * @property {() => Promise<void>} onValidate - Async function to be called when the user initiates a validation.
- * @property {boolean} isLoading - Flag indicating if the validation process is currently in progress.
- * @property {ValidationResult | null} validationResult - The result of the last validation, or null if no validation has been performed.
- * @property {Tier} tier - The user's current tier, which determines if validation is available.
+ * @file components/GeneratedPrompt.tsx
+ * @description Renders the compiled prompt string in a readable code block.
+ * Provides functionality to copy the prompt to the clipboard and triggers
+ * the schema validation process against the Gemini API.
  */
-interface GeneratedPromptProps {
+
+/**
+ * Props for the GeneratedPrompt component.
+ */
+export interface GeneratedPromptProps {
+  /** The complete, underlying data object defining the prompt contract. */
   promptData: PromptData;
+  /** The user's Gemini API key required for validation and analysis calls. */
   apiKey: string;
+  /** The fully compiled, formatted prompt string ready to be copied or executed. */
   promptText: string;
+  /** Async callback fired when the user clicks the "Validate Output" button. */
   onValidate: () => Promise<void>;
+  /** Flag indicating if a validation network request is currently in flight. */
   isLoading: boolean;
+  /** The resulting data payload or error message from the last validation attempt. */
   validationResult: ValidationResult | null;
+  /** The user's current service tier, restricting access to the validation feature. */
   tier: Tier;
 }
 
 /**
- * @component GeneratedPrompt
- * @description A component that displays the generated prompt text, allows copying it to the clipboard,
- * and provides a button to trigger validation of the prompt's output against a schema.
- * @param {GeneratedPromptProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered component for displaying and validating the generated prompt.
+ * Displays the final generated prompt text. Includes a copy button and a validation
+ * panel that conditionally renders based on the user's tier. Integrates the
+ * `SynergyAnalyzer` for advanced contract evaluation.
+ *
+ * @param {GeneratedPromptProps} props - Configuration and state props.
+ * @returns {React.ReactElement} The rendered prompt display and validation UI.
  */
 const GeneratedPrompt: React.FC<GeneratedPromptProps> = ({ promptText, onValidate, isLoading, validationResult, tier, promptData, apiKey }) => {
   const [copied, setCopied] = useState(false);
 
+  /**
+   * Copies the compiled prompt text to the system clipboard and temporarily changes
+   * the button state to indicate success.
+   * @returns {void}
+   */
   const handleCopy = () => {
     navigator.clipboard.writeText(promptText);
     setCopied(true);

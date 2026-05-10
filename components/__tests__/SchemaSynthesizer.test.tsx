@@ -13,8 +13,9 @@ vi.mock('../../services/geminiService', () => ({
 }));
 
 describe('SchemaSynthesizer', () => {
-    const mockOnSchemaGenerated = vi.fn();
+    const mockOnSchemaUpdate = vi.fn();
     const apiKey = 'dummy_key';
+    const dummySchema = "{}";
 
     afterEach(() => {
         cleanup();
@@ -23,14 +24,14 @@ describe('SchemaSynthesizer', () => {
         vi.clearAllMocks();
     });
 
-    it('should render a text area and a button', () => {
-        render(<SchemaSynthesizer onSchemaGenerated={mockOnSchemaGenerated} apiKey={apiKey} tier="enterprise" />);
+    it('should render text areas and a button', () => {
+        render(<SchemaSynthesizer currentSchema={dummySchema} onSchemaUpdate={mockOnSchemaUpdate} disabled={false} apiKey={apiKey} />);
         expect(screen.getByPlaceholderText(/Paste an example output here/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Synthesize Schema/i })).toBeInTheDocument();
     });
 
-    it('should show disabled state for non-Pro/Enterprise tiers', () => {
-        render(<SchemaSynthesizer onSchemaGenerated={mockOnSchemaGenerated} apiKey={apiKey} tier="starter" />);
+    it('should show disabled state when disabled prop is true', () => {
+        render(<SchemaSynthesizer currentSchema={dummySchema} onSchemaUpdate={mockOnSchemaUpdate} disabled={true} apiKey={apiKey} />);
         const button = screen.getByRole('button', { name: /Requires Pro\/Enterprise/i }) as HTMLButtonElement;
         expect(button.disabled).toBe(true);
     });
@@ -39,7 +40,7 @@ describe('SchemaSynthesizer', () => {
         const mockSchema = '{"type":"object"}';
         (generateSchemaFromExample as ReturnType<typeof vi.fn>).mockResolvedValue(mockSchema);
 
-        render(<SchemaSynthesizer onSchemaGenerated={mockOnSchemaGenerated} apiKey={apiKey} tier="enterprise" />);
+        render(<SchemaSynthesizer currentSchema={dummySchema} onSchemaUpdate={mockOnSchemaUpdate} disabled={false} apiKey={apiKey} />);
 
         const textArea = screen.getByPlaceholderText(/Paste an example output here/i);
         fireEvent.change(textArea, { target: { value: '{"a": 1}' } });
@@ -52,15 +53,15 @@ describe('SchemaSynthesizer', () => {
 
         await waitFor(() => {
             expect(generateSchemaFromExample).toHaveBeenCalledWith('{"a": 1}', apiKey);
-            expect(mockOnSchemaGenerated).toHaveBeenCalledWith(mockSchema);
-            expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(true);
+            expect(mockOnSchemaUpdate).toHaveBeenCalledWith(mockSchema);
+            expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(true); // Still disabled because textarea was cleared, making input empty
         });
     });
 
     it('should handle API errors gracefully', async () => {
         (generateSchemaFromExample as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('API failure'));
 
-        render(<SchemaSynthesizer onSchemaGenerated={mockOnSchemaGenerated} apiKey={apiKey} tier="enterprise" />);
+        render(<SchemaSynthesizer currentSchema={dummySchema} onSchemaUpdate={mockOnSchemaUpdate} disabled={false} apiKey={apiKey} />);
 
         const textArea = screen.getByPlaceholderText(/Paste an example output here/i);
         fireEvent.change(textArea, { target: { value: '{"a": 1}' } });
@@ -70,7 +71,7 @@ describe('SchemaSynthesizer', () => {
 
         await waitFor(() => {
             expect(screen.queryByText(/API failure/i)).not.toBeNull();
-            expect(mockOnSchemaGenerated).not.toHaveBeenCalled();
+            expect(mockOnSchemaUpdate).not.toHaveBeenCalled();
         });
     });
 });

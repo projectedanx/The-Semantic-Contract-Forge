@@ -1,40 +1,44 @@
-
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
+import { AppContext } from '../App';
 import { SavedPromptContract, PromptData } from '../types';
-import ConfirmationModal from './ConfirmationModal';
 import { TrashIcon } from './icons/TrashIcon';
 import { LibraryIcon } from './icons/LibraryIcon';
-import { AppContext } from '../App';
+import ConfirmationModal from './ConfirmationModal';
 
 /**
- * @interface SaveLoadControlsProps
- * @description Props for the SaveLoadControls component.
- * @property {SavedPromptContract[]} contracts - The list of saved prompt contracts.
- * @property {SavedPromptContract | null} activeContract - The currently active/loaded contract.
- * @property {(promptData: PromptData, id: string | null, name: string) => SavedPromptContract} onSave - Function to save a new or existing contract.
- * @property {(contract: SavedPromptContract) => void} onLoad - Function to load a contract.
- * @property {(id: string) => void} onDelete - Function to delete a contract.
- * @property {() => void} onNew - Function to clear the form for a new contract.
- * @property {PromptData} promptData - The current data in the prompt editor.
- * @property {(promptData: PromptData, name: string) => void} onSaveTemplate - Function to save the current prompt data as a new template.
+ * @file components/SaveLoadControls.tsx
+ * @description Provides the UI layer for managing saved prompt contracts. Handles saving, loading,
+ * and deleting contracts via a dropdown and modals.
  */
-interface SaveLoadControlsProps {
+
+/**
+ * Props for the SaveLoadControls component.
+ */
+export interface SaveLoadControlsProps {
+    /** The complete list of saved prompt contracts from local storage. */
     contracts: SavedPromptContract[];
+    /** The currently loaded active contract, or null if starting a new one. */
     activeContract: SavedPromptContract | null;
-    onSave: (promptData: PromptData, id:string | null, name: string) => SavedPromptContract;
+    /** Callback to execute when saving a contract. */
+    onSave: (promptData: PromptData, id: string | null, name: string) => SavedPromptContract;
+    /** Callback to execute when a user selects a contract to load. */
     onLoad: (contract: SavedPromptContract) => void;
+    /** Callback to execute when a user confirms contract deletion. */
     onDelete: (id: string) => void;
+    /** Callback to execute to clear the current editor and start a new contract. */
     onNew: () => void;
+    /** The current state of the editor data, required for saving operations. */
     promptData: PromptData;
+    /** Callback to save the current editor state as a reusable template. */
     onSaveTemplate: (promptData: PromptData, name: string) => void;
 }
 
 /**
- * @component SaveLoadControls
- * @description A component that provides UI controls for saving, loading, deleting, and creating new prompt contracts and templates.
- * It includes modals for user confirmation and input.
- * @param {SaveLoadControlsProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered save/load controls.
+ * Renders the top-level controls for persistence: a dropdown to select contracts,
+ * buttons to save, save as template, and delete. Handles user confirmation Modals.
+ *
+ * @param {SaveLoadControlsProps} props - Callbacks and state for persistence.
+ * @returns {React.ReactElement} The rendered control strip and associated modals.
  */
 const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeContract, onSave, onLoad, onDelete, onNew, promptData, onSaveTemplate }) => {
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
@@ -45,9 +49,8 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
     const appContext = useContext(AppContext);
 
     /**
-     * @const contractToDeleteName
-     * @description Memoized name of the contract currently selected for deletion.
-     * Prevents O(N) array search on every render.
+     * Memoized name of the contract currently selected for deletion.
+     * Prevents an O(N) array search on every render.
      */
     const contractToDeleteName = useMemo(() => {
         if (!contractToDelete) return '';
@@ -62,6 +65,10 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         }
     }, [activeContract]);
     
+    /**
+     * Handles the logic when the Save button is clicked. If an active contract exists,
+     * it overwrites it. Otherwise, it prompts for a new name.
+     */
     const handleSaveClick = () => {
         if (activeContract) {
             onSave(promptData, activeContract.id, activeContract.name);
@@ -70,6 +77,9 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         }
     };
 
+    /**
+     * Confirms the save operation from the "Save As..." modal.
+     */
     const handleConfirmSave = () => {
         if (contractName.trim()) {
             onSave(promptData, null, contractName.trim());
@@ -77,11 +87,17 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         }
     };
 
+    /**
+     * Opens the modal to save the current state as a new template.
+     */
     const handleSaveTemplateClick = () => {
         setContractName(''); // Reset name for template
         setIsTemplateModalOpen(true);
     };
 
+    /**
+     * Confirms saving the current editor state as a template.
+     */
     const handleConfirmSaveTemplate = () => {
         if (contractName.trim()) {
             onSaveTemplate(promptData, contractName.trim());
@@ -89,11 +105,18 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         }
     };
     
+    /**
+     * Stages a contract for deletion and opens the confirmation modal.
+     * @param {string} id - The ID of the contract to delete.
+     */
     const handleDeleteClick = (id: string) => {
         setContractToDelete(id);
         setIsDeleteModalOpen(true);
     };
 
+    /**
+     * Executes the deletion after user confirmation.
+     */
     const handleConfirmDelete = () => {
         if (contractToDelete) {
             onDelete(contractToDelete);
@@ -102,6 +125,10 @@ const SaveLoadControls: React.FC<SaveLoadControlsProps> = ({ contracts, activeCo
         setIsDeleteModalOpen(false);
     };
     
+    /**
+     * Handles selection changes in the contracts dropdown.
+     * @param {React.ChangeEvent<HTMLSelectElement>} e - The change event from the select element.
+     */
     const handleLoad = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
         if (selectedId === 'new') {

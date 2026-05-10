@@ -30,23 +30,26 @@ Built on the principles of **Design by Contract (DbC)**, the SCF enables develop
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project and add your Google Gemini API key:
+    Create a `.env` file in the root of the project and add your configuration details. Note: The application operates on a **Bring Your Own Key (BYOK)** pattern for LLM access; you do not need to store your Gemini API key in the `.env` file for local development, as the UI will securely prompt for and store it in `localStorage`.
+
+    Example `.env.example`:
     ```
+    # Add non-sensitive configuration here
     ```
-    *Note: The application uses Vite, which automatically loads environment variables from `.env` files.*
 
 4.  **Run the development server:**
     ```bash
-    npm run dev
+    npm run dev &
     ```
     The application will be available at `http://localhost:5173` (or another port if 5173 is in use).
 
 ### Available Scripts
 
--   `npm run dev`: Starts the development server.
+-   `npm run dev &`: Starts the Vite development server.
 -   `npm run build`: Compiles the TypeScript and builds the application for production.
--   `npm run lint`: Lints the codebase for potential errors.
--   `npm run preview`: Serves the production build locally for previewing.
+-   `npm run preview &`: Serves the production build locally for previewing.
+-   `npm test`: Executes the Vitest test suite.
+-   `npm run mcp &`: Starts the Model Context Protocol (MCP) server.
 
 ---
 
@@ -54,86 +57,59 @@ Built on the principles of **Design by Contract (DbC)**, the SCF enables develop
 
 The Forge is structured into tiers, offering progressively powerful features for different use cases.
 
-### Core Features
--   **WHIMSY — The Affective Topologist:** An enterprise-tier template (WHIMSY Injector Specification) that uses the Petzold Loop to inject measurable delight and brand-sovereign personality into digital components. It strictly enforces the Incremental Isolation Principle, outputting either a Manifold α payload (copy/content) OR a Manifold β module (CSS/JS structure), never both simultaneously. This prevents the "projection tax" while maintaining low Confidence-Fidelity Divergence Index (CFDI) values.
+### Tiered System
+Progress from basic prompts to enterprise-grade governance.
+-   **Starter Tier:** CRISP Framework templates and Zero-Shot/Few-Shot patterns.
+-   **Pro Tier:** Unlock Preconditions, Postconditions, and strict JSON Schema Enforcement.
+-   **Enterprise Tier:** Engage Constitutional AI, CI/CD integrations, and Semantic Governance Modules.
 
--   **Tiered System:** Progress from basic prompts to enterprise-grade governance.
-    -   **Starter Tier:** CRISP Framework templates.
-    -   **Pro Tier:** Pre/Postconditions and JSON Schema Enforcement.
-    -   **Enterprise Tier:** Constitutional AI and governance constraints.
+### Core Capabilities
 -   **Dynamic Prompt Generation:** Automatically builds a structured, high-fidelity prompt based on your inputs.
--   **Pluriversal Schema Synthesis:** Automatically generate formal OpenAPI JSON schemas from raw user-provided examples, demonstrating structural Human-AI synergy.
--   **Gemini-Powered Validation:** For Pro and Enterprise tiers, validates a sample AI output against your defined JSON schema.
--   **Save & Load Contracts:** Persist your prompt contracts in the browser's local storage for later use.
--   **Template Library:** Kickstart your work by loading pre-defined, best-practice templates. You can also save your own contracts as custom templates.
-
-### Error Handling & Stability
-
--   **Global Error Boundary:** The application is wrapped in an error boundary, preventing crashes from unhandled errors and providing a user-friendly recovery screen.
--   **Centralized Logging:** A unified logging service captures structured error information for easier debugging.
--   **User-Facing Toasts:** Non-critical errors (e.g., API failures) are communicated to the user via non-intrusive toast notifications.
+-   **Pluriversal Schema Synthesis:** Automatically generates formal OpenAPI JSON schemas from raw user-provided examples, demonstrating structural Human-AI synergy.
+-   **Human-AI Synergy Analyzer (TACT Lens):** (Enterprise Only) Evaluates the structural analogy mapping of responsibilities between human judgment and AI deterministic execution to surface operational friction.
+-   **Gemini-Powered Validation:** (Pro/Enterprise Only) Validates a sample AI output against your defined JSON schema via Draft-Conditioned Constrained Decoding (DCCD) simulation.
+-   **Save & Load Contracts:** Persist your prompt contracts securely in the browser's local storage for iterative development.
+-   **Template Library:** Kickstart workflows using built-in, best-practice templates (like the "React Component Generator" or "API Service Function"), and save your own custom contracts as reusable templates.
 
 ---
 
 ## 🛠️ Technology Stack
 
 -   **Framework:** React with Vite
--   **Language:** TypeScript
+-   **Language:** TypeScript (Strictly typed, `any` type forbidden)
 -   **Styling:** Tailwind CSS
--   **AI Integration:** Google Gemini API (`gemini-2.5-flash`)
+-   **AI Integration:** Google Gemini API (`gemini-1.5-flash`) via `@google/generative-ai`
 -   **State Management:** React Hooks (`useState`, `useMemo`, `useCallback`, `useContext`)
--   **Persistence:** Browser Local Storage
+-   **Persistence:** Browser `localStorage` (secured with runtime type validation guards)
+-   **Testing:** Vitest, React Testing Library, jsdom
+-   **External Integration:** Model Context Protocol (MCP) Server via `@modelcontextprotocol/sdk`
 
 ---
 
 ## 📖 How It Works
 
-1.  **Select a Tier:** Choose the tier that matches your project's complexity.
-2.  **Define the Contract:** Fill out the fields in the **Prompt Contract Editor**, or select a pre-built template from the **Template Library**.
-3.  **Save Your Work:** Use the "Save As..." button to name your contract and store it locally. You can create new contracts or load existing ones from the dropdown.
-4.  **Generate the Prompt:** The SCF automatically assembles a meticulously structured prompt based on your inputs.
-5.  **Validate the Output:** For Pro/Enterprise tiers, use the **"Validate Output with Gemini"** feature to verify the AI's sample output against your defined JSON schema.
-6.  **Iterate and Deploy:** Use the validated, high-fidelity prompt in your applications.
+1.  **Configure API Key:** Launch the app and enter your Google Gemini API Key in the top configuration bar (stored locally).
+2.  **Select a Tier:** Choose the tier that matches your project's complexity (Starter, Pro, Enterprise).
+3.  **Define the Contract:** Fill out the fields in the **Prompt Contract Editor**, or open the **Template Library** to load a pre-built foundation.
+4.  **Save Your Work:** Use "Save As..." to name your contract and store it locally for later retrieval.
+5.  **Generate the Prompt:** The SCF automatically compiles a meticulously structured prompt block in the right-hand panel based on your inputs and selected tier.
+6.  **Synthesize Schemas:** Use the "Pluriversal Schema Synthesis" tool to automatically generate a JSON schema from a raw data example.
+7.  **Validate the Output:** For Pro/Enterprise tiers, click **"Validate Output with Gemini"** to dry-run the prompt and verify the AI's sample output against your defined schema.
+8.  **Analyze Synergy:** For Enterprise tiers, run the **TACT Lens** analyzer to review the division of labor between human context and AI determinism.
+9.  **Iterate and Deploy:** Copy the final, validated prompt into your production codebase or agentic workflow.
 
 ---
-
-## 核心概念 (Core Concepts)
-
--   **Product-Requirements Prompt (PRP):** A highly-structured prompt that serves as an executable specification for an AI's task, detailing not just *what* to do, but the *conditions* and *constraints* under which it must operate.
--   **Design by Contract (DbC):** A software design methodology that uses preconditions, postconditions, and invariants to ensure code correctness. SCF applies this principle to prompt engineering.
--   **Semantic Integrity Constraints (SICs):** Rules embedded within a prompt that mandate adherence to specific standards, such as using only approved UI components or following a coding style guide.
-## New Feature: Human-AI Synergy Analyzer (TACT Lens)
-The platform now includes an Enterprise-tier feature that applies the Technology Affordance and Constraints Theory (TACT). It analyzes the prompt contract to evaluate the structural analogy mapping of responsibilities between human judgment and AI deterministic execution. This helps identify where neither can operate alone and surfaces operational friction and constraints.
-
----
-
 
 ## 🛡️ VULCAN: Vector-Unified Logical Computing Architect Node
 
-As part of our commitment to rigorous architectural governance, the Forge integrates the **VULCAN** framework. Operating at **Tier 3 Autonomy**, VULCAN is an upstream architectural immune system that prevents "Semantic Saponification" (the erosion of bounded contexts) before a single line of downstream code is generated.
+As part of our commitment to rigorous architectural governance, the Forge integrates the **VULCAN** framework principles. Operating as an upstream architectural immune system, VULCAN prevents "Semantic Saponification" (the erosion of bounded contexts) before a single line of downstream code is generated.
 
-Key VULCAN principles include:
--   **Topological Causal Sculpting:** Mapping the physical topology of software intent via Directed Acyclic Graphs (DAGs) to identify blast radii and gravity wells.
--   **Failure-Informed Prompt Inversion (FIPI):** Using a "Symbolic Scar Archive" of known distributed systems failure modes (e.g., Shared Database, Synchronous REST Chains) to mathematically repel the AI from generating unstable architectures.
--   **Epistemic Escrow:** Halting generation with a "Justified Uncertainty Report" when user constraints violate physical laws (e.g., CAP Theorem violations), forcing human clarification rather than silent AI hallucination.
+Key VULCAN principles manifested in SCF:
+-   **Strict Typological Governance:** The codebase strictly forbids the `any` type, relying on discriminated unions and explicit type guards (e.g., `utils/validation.ts`) to validate external state boundaries (like `localStorage`).
+-   **Mereological Mandate:** Microservices/components do not inherit access rights of the whole. State mutations are localized.
+-   **Failure-Informed Prompt Inversion (FIPI):** The prompt generation engine mathematically repels the AI from generating unstable architectures by defining strict negative constraints.
+-   **Epistemic Escrow:** The system halts execution or validation rather than hallucinating when constraints are breached or APIs fail.
 
+## 🔬 TACT Lens: Technology Affordance and Constraints Theory
 
-## 🖋️ AXIOM: The Sovereign Syntactician
-
-Working in tandem with VULCAN is **Axiom**, the Linguist/Coder node responsible for eradicating "Interpretive Fracture" in technical documentation. Axiom ensures that the output of the Forge is not just descriptive, but acts as a mathematically rigorous, zero-ambiguity contract.
-
-Key Axiom principles include:
--   **Draft-Conditioned Constrained Decoding (DCCD):** Employing a two-pass generation strategy (an unconstrained semantic draft followed by strict schema enforcement) to eliminate the "Projection Tax" and ensure 100% compliance with schemas like OpenAPI 3.1.
--   **Symbolic Scar Registry (SSR):** Axiom utilizes an episodic memory layer that stores structurally identical failure topologies from past ambiguities, injecting them as hard warnings into new documentation to prevent recurring errors.
--   **Polyglot Hallucination Resonance (PHR) Mitigation:** By combining Epistemic Escrow with strict source-grounding, Axiom refuses to hallucinate API designs, demanding human clarification when Confidence-Fidelity Divergence Index (CFDI) thresholds are breached.
--   **Anionic Architecture:** Axiom's identity is defined by what it refuses to be. It actively suppresses sycophancy and information-null adjectives ("seamless", "robust") via logit masking, maximizing semantic density.
-
-See `AXIOM_Emergence_Strategy/PLAN_AND_CHECKLIST.md` for more details on Axiom's integration.
-
-## 🔬 Advanced Research: Project Aurelius (Meta-Architect Intelligence)
-
-The Semantic Contract Forge serves as the foundation for **Project Aurelius**, an experimental initiative aimed at bridging the causal intent gap in generative AI, specifically regarding non-Euclidean spatial reasoning.
-
-While current diffusion models rely on visual correlations (the "statistical smudge"), Project Aurelius seeks to invert this paradigm. By encoding explicit geometric and physical rules (e.g., manifold topologies, Gaussian curvature) as **Semantic Integrity Constraints (SICs)** within prompt contracts, we force the AI to act as a deterministic geometry engine rather than a mere image generator.
-
-This initiative also explores an **Agentic Auto-Optimization** loop (a "Plausibility Oracle") to provide continuous feedback on physical realism, and advanced material specifications targeting cross-modal perceptual fusion. For details, see the `project_aurelius` directory.
+The **Human-AI Synergy Analyzer** utilizes the TACT lens to map the cognitive boundaries between user and machine. By generating a formal breakdown of "Human Affordances" vs. "AI Affordances," the tool scores the orthogonality of the prompt contract, ensuring users aren't wasting AI cycles on tasks requiring subjective human intent, nor are humans bottlenecking computational pattern synthesis.

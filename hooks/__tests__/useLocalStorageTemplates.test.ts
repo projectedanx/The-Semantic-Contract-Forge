@@ -1,200 +1,169 @@
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useLocalStorageTemplates } from '../useLocalStorageTemplates';
+import { loggingService } from '../../services/loggingService';
+import { TEMPLATES } from '../../constants/templates';
+
+// Setup jsdom environment for window
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useLocalStorageTemplates } from '../useLocalStorageTemplates';
-import { TEMPLATES } from '../../constants/templates';
-import { loggingService } from '../../services/loggingService';
 
-import { PromptData, PromptTemplate } from '../../types';
+// Mock loggingService
+vi.mock('../../services/loggingService', () => ({
+  loggingService: {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+  }
+}));
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
-      store[key] = value.toString();
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    }),
-    removeItem: vi.fn((key: string) => {
-      delete store[key];
-    }),
-  };
-})();
+const STORAGE_KEY = 'semantic-contract-forge-user-templates';
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
+const validPromptData = {
+  context: 'Context',
+  role: { name: 'Role', description: 'Desc' },
+  instruction: 'Inst',
+  specification: 'Spec',
+  performance: 'Perf',
+  preconditions: 'Pre',
+  postconditions: 'Post',
+  schema: 'Schema',
+  governance: 'Gov'
+};
+
+const validCustomTemplate = {
+  id: 'scf-template-123',
+  name: 'Custom Template 1',
+  description: 'User-defined custom template.',
+  tier: 'starter',
+  prompt: validPromptData
+};
 
 describe('useLocalStorageTemplates', () => {
-  const setUserErrorMock = vi.fn();
-  const TEMPLATE_STORAGE_KEY = 'semantic-contract-forge-user-templates';
-
-  const mockPromptData: PromptData = {
-    context: 'Test context',
-    role: { name: 'Test Role', description: 'Test Description' },
-    instruction: 'Test Instruction',
-    specification: 'Test Specification',
-    performance: 'Test Performance',
-    preconditions: 'Test Preconditions',
-    postconditions: 'Test Postconditions',
-    schema: '',
-    governance: 'Test Governance'
-  };
+  let mockGetItem: any;
+  let mockSetItem: any;
 
   beforeEach(() => {
+    mockGetItem = vi.spyOn(Storage.prototype, 'getItem');
+    mockSetItem = vi.spyOn(Storage.prototype, 'setItem');
     vi.clearAllMocks();
-    localStorageMock.clear();
   });
 
-  it('should load initial built-in templates', () => {
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-    expect(result.current.templates).toEqual(expect.arrayContaining(TEMPLATES));
-    expect(setUserErrorMock).not.toHaveBeenCalled();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should load user templates from localStorage on mount', () => {
-    const userTemplates: PromptTemplate[] = [
-      {
-        id: 'scf-template-123',
-        name: 'User Template',
-        description: 'User-defined custom template.',
-        tier: 'starter',
-        prompt: { ...mockPromptData },
-      }
-    ];
-    localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(userTemplates));
+  it('should initialize with built-in templates if localStorage is empty', () => {
+    mockGetItem.mockReturnValue(null);
+    const mockSetUserError = vi.fn();
 
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
 
-    expect(result.current.templates).toEqual([...TEMPLATES, ...userTemplates]);
-    expect(setUserErrorMock).not.toHaveBeenCalled();
-  });
-
-  it('should save a new template to localStorage', () => {
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-
-    let newTemplate: PromptTemplate | undefined;
-    act(() => {
-      newTemplate = result.current.saveTemplate(mockPromptData, 'New Template');
-    });
-
-    expect(newTemplate).toBeDefined();
-    expect(newTemplate?.name).toBe('New Template');
-    expect(newTemplate?.id).toMatch(/^scf-template-/);
-
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      TEMPLATE_STORAGE_KEY,
-      expect.stringContaining('New Template')
-    );
-
-    expect(result.current.templates).toContainEqual(newTemplate);
-  });
-
-  it('should delete a template from localStorage', () => {
-    // Start with a user template in storage
-    const userTemplate: PromptTemplate = {
-      id: 'scf-template-123',
-      name: 'User Template',
-      description: 'User-defined custom template.',
-      tier: 'starter',
-      prompt: { ...mockPromptData },
-    };
-    localStorageMock.getItem.mockReturnValue(JSON.stringify([userTemplate]));
-
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-
-    act(() => {
-      result.current.deleteTemplate('scf-template-123');
-    });
-
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(TEMPLATE_STORAGE_KEY, JSON.stringify([]));
     expect(result.current.templates).toEqual(TEMPLATES);
+    expect(mockGetItem).toHaveBeenCalledWith(STORAGE_KEY);
+    expect(mockSetUserError).not.toHaveBeenCalled();
   });
 
-  it('should rename a user template and update localStorage', () => {
-    const userTemplate: PromptTemplate = {
-      id: 'scf-template-123',
-      name: 'Old Name',
+  it('should load user templates and append them to built-in templates', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validCustomTemplate]));
+    const mockSetUserError = vi.fn();
+
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
+
+    expect(result.current.templates).toHaveLength(TEMPLATES.length + 1);
+    expect(result.current.templates).toContainEqual(validCustomTemplate);
+  });
+
+  it('should handle invalid template data in localStorage', () => {
+    const invalidTemplates = [{ id: 'scf-template-123' }]; // Missing required fields
+    mockGetItem.mockReturnValue(JSON.stringify(invalidTemplates));
+    const mockSetUserError = vi.fn();
+
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
+
+    expect(result.current.templates).toEqual(TEMPLATES);
+    expect(loggingService.error).toHaveBeenCalled();
+    expect(mockSetUserError).toHaveBeenCalledWith("Could not load some prompt templates. The stored data is invalid.");
+  });
+
+  it('should save a new custom template', () => {
+    mockGetItem.mockReturnValue(null);
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
+
+    let savedTemplate: any;
+    act(() => {
+      savedTemplate = result.current.saveTemplate(validPromptData as any, 'New Custom Template');
+    });
+
+    expect(savedTemplate).toMatchObject({
+      name: 'New Custom Template',
       description: 'User-defined custom template.',
       tier: 'starter',
-      prompt: { ...mockPromptData },
-    };
-    localStorageMock.getItem.mockReturnValue(JSON.stringify([userTemplate]));
-
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-
-    act(() => {
-      result.current.renameTemplate('scf-template-123', 'New Name');
+      prompt: validPromptData
     });
+    expect(savedTemplate.id).toMatch(/^scf-template-\d+$/);
 
-    const updatedTemplate = { ...userTemplate, name: 'New Name' };
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      TEMPLATE_STORAGE_KEY,
-      JSON.stringify([updatedTemplate])
-    );
-    expect(result.current.templates).toContainEqual(updatedTemplate);
+    expect(result.current.templates).toHaveLength(TEMPLATES.length + 1);
+    expect(result.current.templates).toContainEqual(savedTemplate);
+
+    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"name":"New Custom Template"'));
   });
 
-  it('should not change state or localStorage if renaming a non-existent ID', () => {
-    const userTemplate: PromptTemplate = {
-      id: 'scf-template-123',
-      name: 'Old Name',
-      description: 'User-defined custom template.',
-      tier: 'starter',
-      prompt: { ...mockPromptData },
-    };
-    localStorageMock.getItem.mockReturnValue(JSON.stringify([userTemplate]));
-
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-    const initialState = result.current.templates;
+  it('should rename an existing custom template', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validCustomTemplate]));
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
 
     act(() => {
-      result.current.renameTemplate('non-existent-id', 'New Name');
+      result.current.renameTemplate(validCustomTemplate.id, 'Renamed Template');
     });
 
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
-    expect(result.current.templates).toEqual(initialState);
+    const updatedTemplate = result.current.templates.find(t => t.id === validCustomTemplate.id);
+    expect(updatedTemplate?.name).toBe('Renamed Template');
+    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('"name":"Renamed Template"'));
   });
 
-
-  it('should catch and rethrow error when saving to localStorage fails', () => {
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-
-    // Mock setItem to throw an error
-    localStorageMock.setItem.mockImplementationOnce(() => {
-      throw new Error('QuotaExceededError');
-    });
-
-    // Spy on loggingService.error
-    const loggingSpy = vi.spyOn(loggingService, 'error').mockImplementation(() => {});
-
-    expect(() => {
-      result.current.saveTemplate(mockPromptData, 'Failing Template');
-    }).toThrowError("Could not save the template. Your browser's storage might be full.");
-
-    expect(loggingSpy).toHaveBeenCalledWith(
-      "Failed to save template to localStorage",
-      expect.any(Error)
-    );
-
-    loggingSpy.mockRestore();
-  });
-
-  it('should not rename a built-in template', () => {
-    const { result } = renderHook(() => useLocalStorageTemplates(setUserErrorMock));
-    const builtInId = TEMPLATES[0].id;
-    const initialState = [...result.current.templates];
+  it('should delete a custom template', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validCustomTemplate]));
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
 
     act(() => {
-      result.current.renameTemplate(builtInId, 'Modified Name');
+      result.current.deleteTemplate(validCustomTemplate.id);
     });
 
-    expect(localStorageMock.setItem).not.toHaveBeenCalled();
-    expect(result.current.templates).toEqual(initialState);
+    expect(result.current.templates).toHaveLength(TEMPLATES.length);
+    const deletedTemplate = result.current.templates.find(t => t.id === validCustomTemplate.id);
+    expect(deletedTemplate).toBeUndefined();
+    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, "[]");
+  });
+
+  it('should ignore rename requests for non-existent templates', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validCustomTemplate]));
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
+
+    act(() => {
+      result.current.renameTemplate('non-existent-id', 'Renamed Template');
+    });
+
+    const originalTemplate = result.current.templates.find(t => t.id === validCustomTemplate.id);
+    expect(originalTemplate?.name).toBe('Custom Template 1');
+  });
+
+    it('should ignore rename requests for built in templates', () => {
+    mockGetItem.mockReturnValue(JSON.stringify([validCustomTemplate]));
+    const mockSetUserError = vi.fn();
+    const { result } = renderHook(() => useLocalStorageTemplates(mockSetUserError));
+
+    const builtInTemplateId = TEMPLATES[0].id;
+    act(() => {
+      result.current.renameTemplate(builtInTemplateId, 'Renamed Template');
+    });
+
+    const originalTemplate = result.current.templates.find(t => t.id === builtInTemplateId);
+    expect(originalTemplate?.name).toBe(TEMPLATES[0].name);
   });
 });

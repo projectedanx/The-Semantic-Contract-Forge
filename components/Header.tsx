@@ -4,34 +4,40 @@ import SaveLoadControls from './SaveLoadControls';
 import { SavedPromptContract, PromptData } from '../types';
 
 /**
- * @interface HeaderProps
- * @description Props for the Header component. These props are primarily for managing prompt contracts and templates.
- * @property {SavedPromptContract[]} contracts - An array of saved prompt contracts.
- * @property {SavedPromptContract | null} activeContract - The currently active prompt contract, or null if none is active.
- * @property {(promptData: PromptData, id: string | null, name: string) => SavedPromptContract} onSave - Callback function to save a prompt contract.
- * @property {(contract: SavedPromptContract) => void} onLoad - Callback function to load a prompt contract.
- * @property {(id: string) => void} onDelete - Callback function to delete a prompt contract.
- * @property {() => void} onNew - Callback function to create a new prompt contract.
- * @property {PromptData} promptData - The current prompt data.
- * @property {(promptData: PromptData, name: string) => void} onSaveTemplate - Callback function to save the current prompt data as a new template.
+ * @file components/Header.tsx
+ * @description The main navigation and application header. Hosts the application branding
+ * and the `SaveLoadControls` module for contract management.
  */
-interface HeaderProps {
+
+/**
+ * Props for the Header component.
+ * It primarily acts as a pass-through layer, delegating contract management state and callbacks
+ * to the `SaveLoadControls` child component.
+ */
+export interface HeaderProps {
+    /** An array of all saved prompt contracts currently in storage. */
     contracts: SavedPromptContract[];
+    /** The currently active prompt contract, or null if the user is working on an unsaved contract. */
     activeContract: SavedPromptContract | null;
+    /** Callback to save or update a prompt contract in storage. */
     onSave: (promptData: PromptData, id: string | null, name: string) => SavedPromptContract;
+    /** Callback to load an existing contract from storage into the editor. */
     onLoad: (contract: SavedPromptContract) => void;
+    /** Callback to permanently delete a contract from storage. */
     onDelete: (id: string) => void;
+    /** Callback to reset the editor state to a blank contract. */
     onNew: () => void;
+    /** The current state of the prompt editor data. */
     promptData: PromptData;
+    /** Callback to save the current editor state as a reusable template. */
     onSaveTemplate: (promptData: PromptData, name: string) => void;
 }
 
 /**
- * @component Header
- * @description The main header component for the application. It displays the application title and
- * includes the SaveLoadControls for managing contracts.
- * @param {HeaderProps} props - The props for the component, which are passed down to SaveLoadControls.
- * @returns {React.ReactElement} The rendered header component.
+ * Renders the top application header, branding, and delegates user contract operations.
+ *
+ * @param {HeaderProps} props - The props required for routing state to the SaveLoadControls.
+ * @returns {React.ReactElement} The rendered header section.
  */
 const Header: React.FC<HeaderProps> = (props) => {
   return (

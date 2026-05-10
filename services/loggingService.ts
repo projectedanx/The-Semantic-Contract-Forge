@@ -1,29 +1,33 @@
 /**
- * @file A simple, extensible logging service.
- * In a real-world app, this could be integrated with a third-party service like Sentry, LogRocket, or Datadog.
+ * @file services/loggingService.ts
+ * @description A simple, extensible logging service for structured logging.
+ * In a real-world enterprise application, this module would act as the adapter
+ * integrating with observability platforms like Sentry, LogRocket, or Datadog.
  */
 
 /**
- * @typedef {'INFO' | 'WARN' | 'ERROR'} LogLevel
- * @description Defines the available log levels.
+ * Defines the available log severity levels.
  */
 type LogLevel = 'INFO' | 'WARN' | 'ERROR';
 
 /**
- * @class Logger
- * @description A class to handle logging with different levels.
- * It provides a structured way to output logs to the console.
+ * A centralized class to handle application logging with varying severity levels.
+ * It provides a structured format outputting to the console, automatically attaching
+ * ISO timestamps and extracting stack traces for errors.
  */
 class Logger {
   /**
-   * The core logging method.
+   * The core internal logging method that formats and writes the message to the console.
+   *
    * @private
-   * @param {LogLevel} level - The level of the log message.
-   * @param {string} message - The main log message.
-   * @param {unknown} [details] - Optional additional details to log.
+   * @param {LogLevel} level - The severity level of the log message ('INFO', 'WARN', or 'ERROR').
+   * @param {string} message - The primary text message to log.
+   * @param {unknown} [details] - Optional additional data payload to log alongside the message.
+   * @returns {void}
    */
-  private log(level: LogLevel, message: string, details?: unknown) {
+  private log(level: LogLevel, message: string, details?: unknown): void {
     const timestamp = new Date().toISOString();
+    // @ts-expect-error - indexing console by string level name
     console[level.toLowerCase()]?.(
       `[${timestamp}] [${level}] ${message}`,
       details ?? ''
@@ -31,30 +35,37 @@ class Logger {
   }
 
   /**
-   * Logs an informational message.
-   * @param {string} message - The message to log.
-   * @param {unknown} [details] - Optional additional details.
+   * Logs an informational message indicating normal application flow.
+   *
+   * @param {string} message - The informational message to log.
+   * @param {unknown} [details] - Optional additional contextual data to append.
+   * @returns {void}
    */
-  info(message: string, details?: unknown) {
+  info(message: string, details?: unknown): void {
     this.log('INFO', message, details);
   }
 
   /**
-   * Logs a warning message.
-   * @param {string} message - The message to log.
-   * @param {unknown} [details] - Optional additional details.
+   * Logs a warning message indicating a potential issue that is not yet fatal.
+   *
+   * @param {string} message - The warning message to log.
+   * @param {unknown} [details] - Optional additional contextual data to append.
+   * @returns {void}
    */
-  warn(message: string, details?: unknown) {
+  warn(message: string, details?: unknown): void {
     this.log('WARN', message, details);
   }
 
   /**
-   * Logs an error message, including stack trace and context if available.
-   * @param {string} message - A descriptive message for the error.
-   * @param {Error | unknown} error - The error object.
-   * @param {Record<string, unknown>} [context] - Optional additional context for the error.
+   * Logs a critical error message, specifically extracting error messages, stack traces,
+   * and capturing state context without leaking sensitive parameters.
+   *
+   * @param {string} message - A high-level description of what operation failed.
+   * @param {Error | unknown} error - The caught error object or exception payload.
+   * @param {Record<string, unknown>} [context] - Optional dictionary of application state context relevant to the failure.
+   * @returns {void}
    */
-  error(message: string, error: Error | unknown, context?: Record<string, unknown>) {
+  error(message: string, error: Error | unknown, context?: Record<string, unknown>): void {
     const details = {
       errorMessage: error instanceof Error ? error.message : 'An unknown error occurred.',
       stack: error instanceof Error ? error.stack : undefined,
@@ -65,7 +76,7 @@ class Logger {
 }
 
 /**
- * @const {Logger} loggingService
- * @description A singleton instance of the Logger class, exported for use throughout the application.
+ * A singleton instance of the `Logger` class.
+ * This is exported for direct use throughout the application components and services.
  */
 export const loggingService = new Logger();
