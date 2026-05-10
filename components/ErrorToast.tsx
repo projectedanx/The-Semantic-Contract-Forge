@@ -2,22 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { XCircleIcon } from './icons/XCircleIcon';
 
 /**
- * @interface ErrorToastProps
- * @description Props for the ErrorToast component.
- * @property {string | null} message - The error message to display. If null, the toast is hidden.
- * @property {() => void} onDismiss - Callback function to execute when the toast is dismissed.
+ * @file components/ErrorToast.tsx
+ * @description A transient, animated toast notification component used specifically
+ * for displaying non-blocking error messages to the user (e.g., API failures).
  */
-interface ErrorToastProps {
+
+/**
+ * Props for the ErrorToast component.
+ */
+export interface ErrorToastProps {
+  /** The text message to display. If null or undefined, the toast hides itself. */
   message: string | null;
+  /** Callback fired when the toast is manually dismissed or auto-dismisses after a timeout. */
   onDismiss: () => void;
 }
 
 /**
- * @component ErrorToast
- * @description A toast notification component for displaying errors. It appears with an animation,
- * stays for a set duration, and can be dismissed manually.
- * @param {ErrorToastProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered toast component.
+ * Renders a toast notification that floats at the bottom of the screen.
+ * Automatically dismisses itself after 6 seconds or can be closed manually.
+ *
+ * @param {ErrorToastProps} props - Configuration props for the toast.
+ * @returns {React.ReactElement} The toast UI component.
  */
 const ErrorToast: React.FC<ErrorToastProps> = ({ message, onDismiss }) => {
   const [isVisible, setIsVisible] = useState(false);

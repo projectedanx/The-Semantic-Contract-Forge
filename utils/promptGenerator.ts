@@ -1,5 +1,11 @@
-
 import { PromptData, Tier } from '../types';
+
+/**
+ * @file utils/promptGenerator.ts
+ * @description Centralized logic for compiling raw user input (`PromptData`) into a structured,
+ * tiered prompt string. Includes the VIPER (Visual Intent & Physical Execution Router) subsystem
+ * for enforcing physical hardware constraints over aesthetic adjectives.
+ */
 
 const BANNED_TOKENS = [
   'masterpiece', 'epic', 'stunning', 'beautiful', 'hyper-realistic',
@@ -8,6 +14,13 @@ const BANNED_TOKENS = [
   'gorgeous', 'cinematic'
 ];
 
+/**
+ * Scans the provided prompt data for banned evaluative adjectives.
+ * Part of the VIPER subsystem's Adjectival L2 Bounding.
+ *
+ * @param {PromptData} data - The prompt data to scan.
+ * @returns {string[]} An array of banned tokens found in the prompt text.
+ */
 function checkBannedTokens(data: PromptData): string[] {
   const rejectedTokens: string[] = [];
   const allText = `${data.context} ${data.instruction} ${data.specification} ${data.performance} ${data.preconditions} ${data.postconditions}`.toLowerCase();
@@ -20,6 +33,14 @@ function checkBannedTokens(data: PromptData): string[] {
   return rejectedTokens;
 }
 
+/**
+ * Validates whether the prompt data contains sufficient Hardware-Forced Physicality parameters
+ * (HGI - Hardware Grounding Index).
+ * Part of the VIPER subsystem.
+ *
+ * @param {PromptData} data - The prompt data to check.
+ * @returns {boolean} True if the prompt includes required hardware terminology, false otherwise.
+ */
 function checkHGI(data: PromptData): boolean {
   const allText = `${data.context} ${data.instruction} ${data.specification} ${data.performance} ${data.preconditions} ${data.postconditions}`.toLowerCase();
 
@@ -33,6 +54,14 @@ function checkHGI(data: PromptData): boolean {
   return hasLens || hasFilmStock || hasLighting || hasSensor || hasAperture;
 }
 
+/**
+ * Formats a diagnostic message when the VIPER subsystem detects non-compliant prompt data
+ * (e.g., usage of banned tokens or lack of hardware grounding).
+ *
+ * @param {string[]} rejectedTokens - The array of banned tokens found.
+ * @param {boolean} hgiCompliant - Whether the prompt met Hardware Grounding Index requirements.
+ * @returns {string} A formatted markdown diagnostic report.
+ */
 function formatDiagnostic(rejectedTokens: string[], hgiCompliant: boolean): string {
   let diagnostic = `**[DIAGNOSTIC // VIPER-GAFFER v2026.4]**\n`;
   diagnostic += `Session_ID: VPR-${Math.random().toString(36).substring(2, 9).toUpperCase()}\n`;
@@ -56,6 +85,14 @@ function formatDiagnostic(rejectedTokens: string[], hgiCompliant: boolean): stri
   return diagnostic;
 }
 
+/**
+ * The core VIPER generation function. Evaluates a prompt against physical constraints
+ * and either generates a diagnostic failure report or a compliant Optical State Matrix (OSM).
+ *
+ * @param {PromptData} data - The prompt data to evaluate.
+ * @param {number} tierLevel - The numeric tier level (0: starter, 1: pro, 2: enterprise).
+ * @returns {string} The final OSM payload or a diagnostic error message.
+ */
 function generateVIPEROSM(data: PromptData, tierLevel: number): string {
   const rejectedTokens = checkBannedTokens(data);
   const hgiCompliant = checkHGI(data);
@@ -92,12 +129,13 @@ function generateVIPEROSM(data: PromptData, tierLevel: number): string {
 
 /**
  * Generates a structured prompt text from the prompt data based on the user's tier.
- * It assembles different sections of the prompt, filtering out empty sections and those
- * that are not available for the current tier.
+ * It dynamically assembles different sections of the prompt, filtering out empty sections and those
+ * that are restricted by the current tier. It also routes to the VIPER subsystem if the role
+ * indicates visual processing.
  *
  * @param {PromptData} data - The prompt data object containing all the fields from the editor.
- * @param {Tier} tier - The user's current tier, which determines which sections are included.
- * @returns {string} The final, formatted prompt text string.
+ * @param {Tier} tier - The user's current tier ('starter', 'pro', or 'enterprise').
+ * @returns {string} The final, formatted prompt text string ready for execution or copy.
  */
 export function generatePromptText(data: PromptData, tier: Tier): string {
   if (data.role && data.role.name && data.role.name.includes('V.I.P.E.R.')) {

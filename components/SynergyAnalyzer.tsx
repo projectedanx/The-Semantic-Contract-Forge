@@ -3,18 +3,43 @@ import { SynergyAnalysis, SynergyResult, Tier, PromptData } from '../types';
 import { analyzeSynergy } from '../services/geminiService';
 import { SparklesIcon } from './icons/SparklesIcon';
 
-interface SynergyAnalyzerProps {
+/**
+ * @file components/SynergyAnalyzer.tsx
+ * @description Implements the TACT (Technology Affordance and Constraints Theory) Lens UI.
+ * Allows Enterprise users to analyze a prompt contract to determine the optimal mapping of
+ * responsibilities between human judgment and AI deterministic execution.
+ */
+
+/**
+ * Props for the SynergyAnalyzer component.
+ */
+export interface SynergyAnalyzerProps {
+  /** The fully populated data object for the prompt contract to analyze. */
   promptData: PromptData;
+  /** The user's Gemini API key for executing the analysis. */
   apiKey: string;
+  /** The user's current service tier, restricting access to this Enterprise feature. */
   tier: Tier;
 }
 
+/**
+ * A specialized component that triggers and displays a structured Human-AI synergy analysis.
+ * It renders a dashboard showing affordances, constraints, and a calculated synergy score.
+ *
+ * @param {SynergyAnalyzerProps} props - Configuration and data dependencies.
+ * @returns {React.ReactElement} The TACT Lens analysis dashboard.
+ */
 const SynergyAnalyzer: React.FC<SynergyAnalyzerProps> = ({ promptData, apiKey, tier }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<SynergyResult | null>(null);
 
   const canAnalyze = tier === 'enterprise';
 
+  /**
+   * Initiates the TACT synergy analysis via the Gemini service and updates local state
+   * with the `SynergyResult`.
+   * @returns {Promise<void>}
+   */
   const handleAnalyze = async () => {
     if (!apiKey) {
       setResult({ success: false, error: 'API Key is required for Synergy Analysis.' });
@@ -57,6 +82,7 @@ const SynergyAnalyzer: React.FC<SynergyAnalyzerProps> = ({ promptData, apiKey, t
 
       {result && (
         <div className="mt-6 space-y-4">
+          {/* Explicit boolean check to satisfy discriminated union narrowing */}
           {result.success === false ? (
             <div className="p-4 bg-red-900/20 border border-red-800 rounded-lg">
               <p className="text-red-400 font-semibold mb-1">❌ Analysis Failed</p>

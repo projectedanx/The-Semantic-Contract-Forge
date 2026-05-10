@@ -2,64 +2,67 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { loggingService } from '../services/loggingService';
 
 /**
- * @interface Props
- * @description Props for the ErrorBoundary component.
- * @property {ReactNode} children - The child components to render.
+ * @file components/ErrorBoundary.tsx
+ * @description Implements a React Error Boundary to catch JavaScript errors anywhere
+ * in its child component tree, log those errors to the central logging service, and display
+ * a fallback UI instead of crashing the entire application.
  */
-interface Props {
+
+/**
+ * Props for the ErrorBoundary component.
+ */
+export interface ErrorBoundaryProps {
+  /** The child components that this boundary wraps and protects. */
   children: ReactNode;
 }
 
 /**
- * @interface State
- * @description State for the ErrorBoundary component.
- * @property {boolean} hasError - Whether an error has been caught.
+ * Internal state for the ErrorBoundary component.
  */
-interface State {
+export interface ErrorBoundaryState {
+  /** Flag indicating whether an error has been caught by the boundary. */
   hasError: boolean;
 }
 
 /**
- * @class ErrorBoundary
- * @extends Component<Props, State>
- * @description A React component that catches JavaScript errors anywhere in its child component tree,
- * logs those errors, and displays a fallback UI instead of the component tree that crashed.
+ * A React class component acting as an Error Boundary.
+ * Catches errors during rendering, in lifecycle methods, and in constructors of the whole tree below it.
  */
-class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   /**
-   * @property {State} state - The state of the component.
+   * Initializes the component state, defaulting to no error.
    */
-  public state: State = {
+  public state: ErrorBoundaryState = {
     hasError: false,
   };
 
   /**
-   * @static
-   * @method getDerivedStateFromError
-   * @description This lifecycle method is used to update the state so that the next render will show the fallback UI.
-   * @param {Error} _ - The error that was thrown.
-   * @returns {State} An object with the updated state.
+   * React lifecycle method invoked after an error is thrown in a descendant component.
+   * Used to update state so the next render shows the fallback UI.
+   *
+   * @param {Error} _ - The error that was thrown (unused in state derivation).
+   * @returns {ErrorBoundaryState} The new state object setting `hasError` to true.
    */
-  public static getDerivedStateFromError(_: Error): State {
-    // Update state so the next render will show the fallback UI.
+  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
     return { hasError: true };
   }
 
   /**
-   * @method componentDidCatch
-   * @description This lifecycle method is called after an error has been thrown by a descendant component.
-   * It receives two parameters: the error that was thrown, and an object with a componentStack key.
-   * @param {Error} error - The error that was thrown.
-   * @param {ErrorInfo} errorInfo - An object with a componentStack key containing information about which component threw the error.
+   * React lifecycle method invoked after an error has been thrown by a descendant component.
+   * Used for logging error details to external services.
+   *
+   * @param {Error} error - The actual Error object that was thrown.
+   * @param {ErrorInfo} errorInfo - React-specific error info, including the component stack trace.
+   * @returns {void}
    */
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     loggingService.error("Uncaught render error", error, { componentStack: errorInfo.componentStack });
   }
 
   /**
-   * @method render
-   * @description Renders the component.
-   * @returns {ReactNode} The rendered component.
+   * Renders the children if no error has occurred, otherwise renders the fallback UI.
+   *
+   * @returns {ReactNode} The application content or the error fallback UI.
    */
   public render() {
     if (this.state.hasError) {
@@ -84,7 +87,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return (this as React.Component<Props, State>).props.children;
+    return (this as React.Component<ErrorBoundaryProps, ErrorBoundaryState>).props.children;
   }
 }
 

@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState, useMemo } from 'react';
 import { PromptData, Tier, Role } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
@@ -7,27 +6,39 @@ import SchemaSynthesizer from './SchemaSynthesizer';
 import { generateRole } from '../services/geminiService';
 
 /**
- * @interface PromptEditorProps
- * @description Props for the PromptEditor component.
- * @property {PromptData} promptData - The current state of the prompt contract data.
- * @property {React.Dispatch<React.SetStateAction<PromptData>>} setPromptData - The state setter function to update the prompt data.
- * @property {Tier} currentTier - The user's current tier, used to lock/unlock features.
+ * @file components/PromptEditor.tsx
+ * @description Provides the central form interface for editing a `PromptData` contract.
+ * Manages tiered feature locks, dynamic role generation, and schema synthesis integration.
  */
-interface PromptEditorProps {
+
+/**
+ * Props for the PromptEditor component.
+ */
+export interface PromptEditorProps {
+  /** The current state of the prompt data contract being edited. */
   promptData: PromptData;
+  /** React state setter function to update the prompt data locally. */
   setPromptData: React.Dispatch<React.SetStateAction<PromptData>>;
+  /** The currently active Tier level, determining which fields are editable. */
   currentTier: Tier;
+  /** The array of available AI personas/roles. */
   roles: Role[];
+  /** Callback fired when a new role is synthesized via the API. */
   onRoleGenerated: (newRole: Role) => void;
+  /** The user's Gemini API key, passed down to generation sub-components. */
   apiKey: string;
 }
 
 /**
- * @component Section
- * @description A reusable component for creating a labeled section with a title and description.
- * It can be visually locked based on the `isLocked` prop.
- * @param {{ title: string; description: string; children: React.ReactNode; isLocked?: boolean }} props - The props for the component.
- * @returns {React.ReactElement} The rendered section component.
+ * A reusable sub-component for rendering a labeled section of the editor.
+ * Includes optional visual locking mechanisms for tiered feature gates.
+ *
+ * @param {object} props - Section configuration props.
+ * @param {string} props.title - The main heading for the section.
+ * @param {string} props.description - Helper text explaining the section's purpose.
+ * @param {React.ReactNode} props.children - The form controls inside the section.
+ * @param {boolean} [props.isLocked] - If true, visually dims the section and prevents interaction.
+ * @returns {React.ReactElement} The styled section container.
  */
 const Section: React.FC<{ title: string; description: string; children: React.ReactNode; isLocked?: boolean }> = ({ title, description, children, isLocked }) => (
   <div className={`relative p-4 border border-slate-700 rounded-lg ${isLocked ? 'opacity-50' : ''}`}>
@@ -39,10 +50,10 @@ const Section: React.FC<{ title: string; description: string; children: React.Re
 );
 
 /**
- * @component TextArea
- * @description A styled, reusable textarea component that forwards all standard textarea attributes.
- * @param {React.TextareaHTMLAttributes<HTMLTextAreaElement>} props - The props for the textarea element.
- * @returns {React.ReactElement} The rendered textarea component.
+ * A styled, reusable textarea component that forwards all standard HTML attributes.
+ *
+ * @param {React.TextareaHTMLAttributes<HTMLTextAreaElement>} props - Standard textarea props.
+ * @returns {React.ReactElement} The styled textarea element.
  */
 const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
   <textarea
@@ -53,14 +64,18 @@ const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (p
 );
 
 /**
- * @component PromptEditor
- * @description The main component for editing the fields of a prompt contract.
- * It is composed of multiple sections, some of which are conditionally disabled based on the user's tier.
- * @param {PromptEditorProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered prompt editor form.
+ * The main component for editing the fields of a prompt contract.
+ * Conditionally enables/disables sections (Preconditions, Schema, Governance)
+ * based on the user's selected tier.
+ *
+ * @param {PromptEditorProps} props - Configuration and state control props.
+ * @returns {React.ReactElement} The complete editor form UI.
  */
 const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, currentTier, roles, onRoleGenerated, apiKey }) => {
 
+  /**
+   * Memoized map of roles for O(1) lookups during dropdown selection.
+   */
   const roleMap = useMemo(() => {
     const map = new Map<string, Role>();
     for (let i = 0; i < roles.length; i++) {
@@ -69,6 +84,12 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
     return map;
   }, [roles]);
 
+  /**
+   * Generic change handler for textareas and selects, updating the central `PromptData` state.
+   *
+   * @param {React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>} e - The change event.
+   * @returns {void}
+   */
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'role') {
@@ -98,57 +119,58 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
           </select>
           <button
             onClick={() => setRoleGeneratorVisible(!isRoleGeneratorVisible)}
-            className="px-3 py-2 bg-amber-500/10 text-amber-300 rounded-md border border-amber-500/20 hover:bg-amber-500/20 transition-colors flex items-center gap-2"
-            title="Generate Role with AI"
+            className="flex items-center justify-center space-x-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md transition font-semibold"
+            title="Generate a new custom role"
           >
             <SparklesIcon className="w-5 h-5" />
           </button>
         </div>
-        <p className="text-xs text-slate-500 mt-2 p-2 bg-slate-900/50 rounded">{promptData.role.description}</p>
-        {isRoleGeneratorVisible &&
-          <div className="mt-4">
-            <RoleGenerator
-              onGenerate={(persona) => generateRole(persona, apiKey)}
-              onRoleGenerated={onRoleGenerated}
-              disabled={!isProOrEnterprise}
-            />
-          </div>
-        }
-      </Section>
-
-      <Section title="Instruction" description="The primary task or command for the AI.">
-        <TextArea name="instruction" value={promptData.instruction} onChange={handleChange} placeholder="e.g., Generate a React functional component named 'ProductCard'..." />
-      </Section>
-
-      <Section title="Specification" description="Detailed requirements, constraints, and output format.">
-        <TextArea name="specification" value={promptData.specification} onChange={handleChange} placeholder="e.g., The component must use Tailwind CSS, accept props 'name' (string) and 'price' (number)..." />
-      </Section>
-
-      <Section title="Performance" description="Define the quality criteria for the AI's output.">
-        <TextArea name="performance" value={promptData.performance} onChange={handleChange} />
-      </Section>
-
-      <Section title="Preconditions" description="Conditions that must be true before execution (Pro Tier)." isLocked={!isProOrEnterprise}>
-        <TextArea name="preconditions" value={promptData.preconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The 'product' prop object must not be null." />
-      </Section>
-
-      <Section title="Postconditions" description="Conditions that must be true after execution (Pro Tier)." isLocked={!isProOrEnterprise}>
-        <TextArea name="postconditions" value={promptData.postconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The output must be a single, valid TSX file content." />
-      </Section>
-
-      <Section title="JSON Output Schema" description="Enforce a specific JSON structure for the output (Pro Tier)." isLocked={!isProOrEnterprise}>
-        <textarea name="schema" value={promptData.schema} onChange={handleChange} disabled={!isProOrEnterprise} className="w-full p-2 bg-slate-900 border font-mono text-sm border-slate-600 rounded-md focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" rows={8} />
-        {isProOrEnterprise && (
-            <SchemaSynthesizer
-                apiKey={apiKey}
-                tier={currentTier}
-                onSchemaGenerated={(schema) => setPromptData(prev => ({ ...prev, schema }))}
-            />
+        {isRoleGeneratorVisible && (
+            <div className="mt-4">
+                <RoleGenerator
+                    disabled={!apiKey}
+                    onGenerate={(persona) => generateRole(persona, apiKey)}
+                    onRoleGenerated={(newRole) => {
+                        onRoleGenerated(newRole);
+                        setPromptData(prev => ({ ...prev, role: newRole }));
+                        setRoleGeneratorVisible(false);
+                    }}
+                />
+            </div>
         )}
       </Section>
 
-      <Section title="Governance" description="Constitutional principles and safety constraints (Enterprise Tier)." isLocked={!isEnterprise}>
-        <TextArea name="governance" value={promptData.governance} onChange={handleChange} disabled={!isEnterprise} />
+      <Section title="Instruction" description="The main goal or action.">
+        <TextArea name="instruction" value={promptData.instruction} onChange={handleChange} placeholder="e.g., Generate a React functional component..." />
+      </Section>
+
+      <Section title="Specification" description="Detailed steps, formats, or logic rules.">
+        <TextArea name="specification" value={promptData.specification} onChange={handleChange} rows={6} placeholder="e.g., 1. The component must accept `title` and `data` props.\n2. Use Tailwind for styling..." />
+      </Section>
+
+      <Section title="Performance Criteria" description="Quantifiable metrics for success.">
+        <TextArea name="performance" value={promptData.performance} onChange={handleChange} placeholder="e.g., The code must be fully typed without 'any'. Component must render under 10ms." />
+      </Section>
+
+      <Section title="Preconditions [PRO+]" description="Conditions that must be true before execution." isLocked={!isProOrEnterprise}>
+        <TextArea name="preconditions" value={promptData.preconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The provided API endpoint must be accessible." />
+      </Section>
+
+      <Section title="Postconditions [PRO+]" description="Conditions that must be true after execution." isLocked={!isProOrEnterprise}>
+        <TextArea name="postconditions" value={promptData.postconditions} onChange={handleChange} disabled={!isProOrEnterprise} placeholder="e.g., The component must not mutate the original data prop." />
+      </Section>
+
+      <Section title="Output Schema [PRO+]" description="Strict JSON schema for the final output." isLocked={!isProOrEnterprise}>
+        <SchemaSynthesizer
+            currentSchema={promptData.schema}
+            onSchemaUpdate={(schema) => setPromptData(prev => ({ ...prev, schema }))}
+            disabled={!isProOrEnterprise || !apiKey}
+            apiKey={apiKey}
+        />
+      </Section>
+
+      <Section title="Governance [ENTERPRISE]" description="High-level rules, compliance, and architectural boundaries." isLocked={!isEnterprise}>
+        <TextArea name="governance" value={promptData.governance} onChange={handleChange} disabled={!isEnterprise} placeholder="e.g., Must adhere to the VULCAN framework and prevent cross-domain state mutation calls." />
       </Section>
     </div>
   );

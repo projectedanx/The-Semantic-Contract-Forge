@@ -1,18 +1,45 @@
-
 import React, { useState } from 'react';
 import { Role } from '../types';
 
-interface RoleGeneratorProps {
+/**
+ * @file components/RoleGenerator.tsx
+ * @description Provides a UI interface for users to describe an AI persona in natural language,
+ * delegating the structured generation of that `Role` object to the Gemini service.
+ */
+
+/**
+ * Props for the RoleGenerator component.
+ */
+export interface RoleGeneratorProps {
+  /**
+   * Async callback fired to initiate role generation based on a natural language description.
+   * Typically delegates to `services/geminiService.ts:generateRole`.
+   */
   onGenerate: (persona: string) => Promise<Role>;
+  /** Callback fired after a successful generation, passing the new structured Role object to the parent. */
   onRoleGenerated: (newRole: Role) => void;
+  /** Disables the input and generation button (e.g., when API keys are missing). */
   disabled?: boolean;
 }
 
+/**
+ * A component that captures a user's natural language description of an AI persona,
+ * manages loading and error states during API generation, and surfaces the resulting
+ * structured `Role` object.
+ *
+ * @param {RoleGeneratorProps} props - Configuration and callback props.
+ * @returns {React.ReactElement} The role generation form UI.
+ */
 const RoleGenerator: React.FC<RoleGeneratorProps> = ({ onGenerate, onRoleGenerated, disabled }) => {
   const [persona, setPersona] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Handles the form submission, validates input, calls the generation service,
+   * and delegates the result to the parent callback.
+   * @returns {Promise<void>}
+   */
   const handleGenerate = async () => {
     if (!persona.trim()) {
       setError('Persona description cannot be empty.');

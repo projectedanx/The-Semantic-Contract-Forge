@@ -1,31 +1,34 @@
-
 import React, { useState, useMemo } from 'react';
 import { PromptTemplate, Tier } from '../types';
 
 /**
- * @interface TemplateLibraryModalProps
- * @description Props for the TemplateLibraryModal component.
- * @property {boolean} isOpen - Whether the modal is currently open.
- * @property {() => void} onClose - Callback function to close the modal.
- * @property {(template: PromptTemplate) => void} onSelect - Callback function when a template is selected.
- * @property {PromptTemplate[]} templates - The list of available prompt templates.
- * @property {Tier} currentTier - The current tier of the user, to determine which templates are accessible.
- * @property {(id: string, newName: string) => void} onRenameTemplate - Callback to rename a custom template.
- * @property {(id: string) => void} onDeleteTemplate - Callback to delete a custom template.
+ * @file components/TemplateLibraryModal.tsx
+ * @description Provides a modal interface for browsing, filtering, and managing prompt templates.
+ * Merges system-level built-in templates with user-created ones.
  */
-interface TemplateLibraryModalProps {
+
+/**
+ * Props for the TemplateLibraryModal component.
+ */
+export interface TemplateLibraryModalProps {
+  /** Indicates whether the modal should be rendered. */
   isOpen: boolean;
+  /** Callback fired to close the modal. */
   onClose: () => void;
+  /** Callback fired when a user selects a template to load into the editor. */
   onSelect: (template: PromptTemplate) => void;
+  /** The combined list of system and user prompt templates. */
   templates: PromptTemplate[];
+  /** The user's current service tier, determining which templates are unlocked. */
   currentTier: Tier;
+  /** Callback to rename a user-defined template. */
   onRenameTemplate: (id: string, newName: string) => void;
+  /** Callback to delete a user-defined template. */
   onDeleteTemplate: (id: string) => void;
 }
 
 /**
- * @const tierColors
- * @description A mapping of tier names to color strings for styling purposes.
+ * Maps Tier levels to Tailwind CSS color families for styling template badges.
  */
 const tierColors: Record<Tier, string> = {
   starter: 'slate',
@@ -34,28 +37,27 @@ const tierColors: Record<Tier, string> = {
 };
 
 /**
- * @interface TemplateCardProps
- * @description Props for the TemplateCard component.
- * @property {PromptTemplate} template - The template data to display.
- * @property {() => void} onSelect - Callback function when the card is selected.
- * @property {boolean} isLocked - Whether the template is locked for the current user's tier.
- * @property {(id: string, newName: string) => void} onRename - Callback to rename the template.
- * @property {(id: string) => void} onDelete - Callback to delete the template.
+ * Props for the internal TemplateCard component.
  */
-interface TemplateCardProps {
+export interface TemplateCardProps {
+  /** The specific template data to render. */
   template: PromptTemplate;
+  /** Callback fired when the card is clicked. */
   onSelect: () => void;
+  /** Indicates if the template exceeds the user's current tier, disabling selection. */
   isLocked: boolean;
+  /** Callback to rename the template (if custom). */
   onRename: (id: string, newName: string) => void;
+  /** Callback to delete the template (if custom). */
   onDelete: (id: string) => void;
 }
 
 /**
- * @component TemplateCard
- * @description A single card component representing a prompt template in the library.
- * It displays template details and provides actions like rename and delete for custom templates.
- * @param {TemplateCardProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered template card.
+ * Renders an individual template card within the library list.
+ * Includes inline editing for custom templates and visual locking based on tier.
+ *
+ * @param {TemplateCardProps} props - Configuration and data for the card.
+ * @returns {React.ReactElement} The styled template card.
  */
 const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect, isLocked, onRename, onDelete }) => {
   const isCustom = template.id.startsWith('scf-template-');
@@ -63,8 +65,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect, isLocke
   const [newName, setNewName] = useState(template.name);
 
   /**
-   * @function handleRename
-   * @description Finalizes the renaming process when the input loses focus or Enter is pressed.
+   * Finalizes the inline renaming process, firing the callback if the name changed.
+   * @returns {void}
    */
   const handleRename = () => {
     if (newName.trim() && newName.trim() !== template.name) {
@@ -135,11 +137,11 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onSelect, isLocke
 };
 
 /**
- * @component TemplateLibraryModal
- * @description A modal dialog for browsing, searching, and selecting prompt templates.
- * It also allows for renaming and deleting user-created templates.
- * @param {TemplateLibraryModalProps} props - The props for the component.
- * @returns {React.ReactElement | null} The rendered modal or null if it's not open.
+ * A modal dialog for browsing, searching, and selecting prompt templates.
+ * Includes text search and tier filtering capabilities.
+ *
+ * @param {TemplateLibraryModalProps} props - Modal configuration and state callbacks.
+ * @returns {React.ReactElement | null} The rendered modal overlay, or null if closed.
  */
 const TemplateLibraryModal: React.FC<TemplateLibraryModalProps> = ({ isOpen, onClose, onSelect, templates, currentTier, onRenameTemplate, onDeleteTemplate }) => {
   if (!isOpen) return null;

@@ -1,23 +1,26 @@
-
 import React from 'react';
 import { Tier } from '../types';
 import { LockIcon } from './icons/LockIcon';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
 
 /**
- * @interface TierSelectorProps
- * @description Props for the TierSelector component.
- * @property {Tier} currentTier - The currently selected tier.
- * @property {(tier: Tier) => void} setTier - Callback function to update the selected tier.
+ * @file components/TierSelector.tsx
+ * @description Provides the UI for users to select their service tier (Starter, Pro, Enterprise).
+ * The selected tier acts as a global state gate, unlocking advanced fields like schemas and governance.
  */
-interface TierSelectorProps {
+
+/**
+ * Props for the TierSelector component.
+ */
+export interface TierSelectorProps {
+  /** The currently active tier state. */
   currentTier: Tier;
+  /** State setter callback to update the active tier. */
   setTier: (tier: Tier) => void;
 }
 
 /**
- * @const tiers
- * @description An object containing the definitions for each tier, including name, description, features, and color.
+ * Configuration object defining the UI content and Tailwind color families for each tier.
  */
 const tiers = {
   starter: {
@@ -41,18 +44,17 @@ const tiers = {
 };
 
 /**
- * @const TIER_KEYS
- * @description The list of available tiers derived from the tiers object.
- * Hoisted outside the component to avoid repeated Object.keys calls during render.
+ * A static array of tier keys hoisted outside the component.
+ * This prevents redundant `Object.keys()` calculations on every React render cycle.
  */
 const TIER_KEYS = Object.keys(tiers) as Tier[];
 
 /**
- * @component TierSelector
- * @description A component that allows the user to select a tier (Starter, Pro, Enterprise).
- * The selected tier controls which features are available in the prompt editor.
- * @param {TierSelectorProps} props - The props for the component.
- * @returns {React.ReactElement} The rendered tier selector component.
+ * Renders a grid of selectable cards representing the available service tiers.
+ * Visual feedback indicates the currently active tier.
+ *
+ * @param {TierSelectorProps} props - The current tier state and updater callback.
+ * @returns {React.ReactElement} The grid of tier selection buttons.
  */
 const TierSelector: React.FC<TierSelectorProps> = ({ currentTier, setTier }) => {
   return (

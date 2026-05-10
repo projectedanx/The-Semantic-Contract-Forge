@@ -1,11 +1,17 @@
-
 import { PromptTemplate } from '../types';
 import { ROLES } from '../constants';
 
 /**
+ * @file constants/templates.ts
+ * @description Defines the built-in, pre-defined prompt templates available to users.
+ * These templates serve as starting points for common use cases across different tiers.
+ */
+
+/**
  * @const {PromptTemplate[]} TEMPLATES
- * @description A list of built-in, pre-defined prompt templates available to all users.
- * Each template provides a starting point for a common use case.
+ * @description A read-only array of built-in, pre-defined prompt templates.
+ * These are injected into the Template Library Modal by default and demonstrate
+ * the usage of CRISP Framework, Pro-level schemas, and Enterprise-level governance.
  */
 export const TEMPLATES: PromptTemplate[] = [
   {

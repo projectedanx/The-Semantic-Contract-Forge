@@ -1,11 +1,17 @@
-
 import { Role } from './types';
+
+/**
+ * @file constants.ts
+ * @description Centralized constants used across the Semantic Contract Forge (SCF).
+ * Includes configuration, predefined data structures, and role definitions.
+ */
 
 /**
  * @let {Role[]} ROLES
  * @description A list of pre-defined roles that the AI can assume.
- * Each role has a name and a description that influences the AI's response style and expertise.
- * This is a `let` to allow for dynamic additions.
+ * Each role has a name and a description that influences the AI's response style,
+ * expertise, and adherence to specific operational constraints.
+ * Declared as a `let` to permit dynamic additions or modifications at runtime if needed.
  */
 export let ROLES: Role[] = [
   {

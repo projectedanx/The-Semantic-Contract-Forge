@@ -4,47 +4,56 @@ import { z } from "zod";
 import { generatePromptText } from "../../utils/promptGenerator.js";
 import { ROLES } from "../../constants.js";
 
+/**
+ * @file src/mcp/server.ts
+ * @description Implements the Model Context Protocol (MCP) server for the Semantic Contract Forge.
+ * Exposes core generation and template fetching capabilities to external AI agents or tooling.
+ */
+
 // KORSAKOV: PHASE_3_EXECUTION. Persona suspended. Type-system active.
 
-
 /**
- * Arguments for the generate_product_requirements_prompt tool.
- * @property {object} contract_core - Core elements of the prompt contract.
- * @property {string} contract_core.context - Project context and background.
- * @property {string} contract_core.role_name - Role name.
- * @property {string} contract_core.role_description - Role description.
- * @property {string} contract_core.instruction - Main instruction or task.
- * @property {string} contract_core.specification - Detailed technical specification.
- * @property {string} contract_core.performance - Performance criteria and metrics.
- * @property {object} dbc_constraints - Design by Contract constraints.
- * @property {string} dbc_constraints.preconditions - Preconditions required for execution.
- * @property {string} dbc_constraints.postconditions - Postconditions guaranteed upon completion.
- * @property {string} dbc_constraints.schema - JSON output schema definition.
- * @property {string} dbc_constraints.governance - Governance constraints and policies.
- * @property {"starter" | "pro" | "enterprise"} tier - Target output tier. Dictates section inclusion.
+ * Interface defining the exact arguments required by the `generate_product_requirements_prompt` MCP tool.
+ * Represents the structure of a complete Prompt Contract.
  */
 interface GenerateProductRequirementsPromptArgs {
+  /** The core contextual elements of the prompt. */
   contract_core: {
+    /** The overall context or background information. */
     context: string;
+    /** The name of the AI persona. */
     role_name: string;
+    /** The description of the AI persona's expertise. */
     role_description: string;
+    /** The main goal or task instruction. */
     instruction: string;
+    /** Detailed specifications and logic formatting. */
     specification: string;
+    /** Quantifiable performance metrics. */
     performance: string;
   };
+  /** Design by Contract (DbC) rules applied to the generation. */
   dbc_constraints: {
+    /** Conditions required before execution. */
     preconditions: string;
+    /** Guaranteed conditions after execution. */
     postconditions: string;
+    /** Formal JSON schema for output validation. */
     schema: string;
+    /** Architectural governance rules. */
     governance: string;
   };
+  /** Target feature tier ('starter', 'pro', or 'enterprise'). */
   tier: "starter" | "pro" | "enterprise";
 }
 
 /**
- * Handles the generation of a Product Requirements Prompt based on Contract data.
- * @param {GenerateProductRequirementsPromptArgs} args - The arguments for generating the prompt.
- * @returns {Promise<{ content: Array<{ type: "text", text: string }>, isError?: boolean }>} The result object containing the generated prompt or an error.
+ * The primary execution handler for the `generate_product_requirements_prompt` MCP tool.
+ * Takes structured arguments from an external caller, routes them through the internal
+ * generator (including VIPER evaluation), and returns the formatted Prompt Contract.
+ *
+ * @param {GenerateProductRequirementsPromptArgs} args - The structured contract data payload.
+ * @returns {Promise<{ content: Array<{ type: "text", text: string }>, isError?: boolean }>} The formatted tool response payload.
  */
 async function handleGenerateProductRequirementsPrompt({ contract_core, dbc_constraints, tier }: GenerateProductRequirementsPromptArgs) {
   try {
@@ -63,108 +72,98 @@ async function handleGenerateProductRequirementsPrompt({ contract_core, dbc_cons
       governance: dbc_constraints.governance,
     };
 
+    // VULCAN Architectural Guard: Prevent invalid combinations before generation
+    if (tier === "starter" && (dbc_constraints.schema || dbc_constraints.governance)) {
+        return {
+            content: [{
+                type: "text" as const,
+                text: "VULCAN HALT: Tier 'starter' cannot enforce schema or governance constraints. Upgrade tier or remove constraints."
+            }],
+            isError: true
+        }
+    }
+
     const generatedPrompt = generatePromptText(promptData, tier);
 
     return {
-      content: [{ type: "text" as const, text: JSON.stringify({ status: "SUCCESS", prompt: generatedPrompt }) }],
+      content: [
+        {
+          type: "text" as const,
+          text: generatedPrompt
+        }
+      ]
     };
-  } catch (err) {
-    return {
-      content: [{
-        type: "text" as const,
-        text: JSON.stringify({
-          error_code: "TOOL_FAULT_SERVER_TOOL_CONFIGURATION",
-          fault_category: "SERVER_TOOL_CONFIGURATION",
-          structured_detail: { violation: "PROMPT_GENERATION_FAILED", error: String(err) },
-          retry_viable: false,
-          suggested_decomposition: "Verify schema definitions and tier compatibility.",
-        }),
-      }],
-      isError: true,
-    };
+  } catch (error) {
+     return {
+         content: [{
+             type: "text" as const,
+             text: `Internal Forge Error: ${error instanceof Error ? error.message : String(error)}`
+         }],
+         isError: true
+     }
   }
 }
 
+/**
+ * Initializes the MCP Server instance, defining metadata and registering available tools
+ * using Zod schemas for strict payload validation.
+ */
 const server = new McpServer({
-  name: "scf-mcp-server",
-  version: "2026.4.1",
+  name: "SemanticContractForge",
+  version: "1.0.0",
 });
 
-// DELIVERABLE 1: Tool Schemas conforming to JSON Schema Draft 2020-12
-// 6-component rubric: Purpose✓ Guidelines✓ Limitations✓ Params✓ Length✓ Examples✓ (implied)
-
-server.registerTool(
-  "get_standard_roles",
-  {
-    title: "Get Standard Roles",
-    description: [
-      "PURPOSE: Retrieves the list of pre-defined standard roles.",
-      "GUIDELINES: Invoke when the agent needs to present role options to the user or populate a dropdown.",
-      "LIMITATIONS: Returns a static list. Does not reflect dynamically added roles.",
-      "PARAMETERS: None.",
-    ].join(" "),
-  },
-  async () => {
-    try {
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify({ status: "SUCCESS", data: ROLES }) }],
-      };
-    } catch (err) {
-      return {
-        content: [{
-          type: "text" as const,
-          text: JSON.stringify({
-            error_code: "TOOL_FAULT_GENERAL_PROGRAMMING",
-            fault_category: "GENERAL_PROGRAMMING",
-            structured_detail: { violation: "UNEXPECTED_ERROR", error: String(err) },
-            retry_viable: false,
-            suggested_decomposition: null,
-          }),
-        }],
-        isError: true,
-      };
-    }
-  }
-);
-
-server.registerTool(
+// Register the primary prompt generation tool
+server.tool(
   "generate_product_requirements_prompt",
+  "Generates a highly structured, tier-gated Prompt Contract based on Design by Contract principles. Use this to create robust, executable specifications for AI agents.",
   {
-    title: "Generate Product Requirements Prompt",
-    description: [
-      "PURPOSE: Generates a structured Product Requirements Prompt (PRP) based on Contract data.",
-      "GUIDELINES: Invoke when a user has defined their contract requirements and needs the finalized prompt string.",
-      "LIMITATIONS: Tier determines output. 'starter' ignores pre/post/schema/gov. 'pro' ignores gov.",
-      "PARAMETERS: contract_core (context, role, instruction, specification, performance); dbc_constraints (preconditions, postconditions, schema, governance); tier ('starter', 'pro', 'enterprise').",
-    ].join(" "),
-    inputSchema: z.object({
-      contract_core: z.object({
-        context: z.string().max(4000).describe("Project context and background. Max 4000 chars."),
-        role_name: z.string().max(100).describe("Role name. Max 100 chars."),
-        role_description: z.string().max(1000).describe("Role description. Max 1000 chars."),
-        instruction: z.string().max(4000).describe("Main instruction or task. Max 4000 chars."),
-        specification: z.string().max(4000).describe("Detailed technical specification. Max 4000 chars."),
-        performance: z.string().max(2000).describe("Performance criteria and metrics. Max 2000 chars."),
-      }).describe("Core elements of the prompt contract."),
-      dbc_constraints: z.object({
-        preconditions: z.string().max(2000).describe("Preconditions required for execution. Max 2000 chars."),
-        postconditions: z.string().max(2000).describe("Postconditions guaranteed upon completion. Max 2000 chars."),
-        schema: z.string().max(8000).describe("JSON output schema definition. Max 8000 chars."),
-        governance: z.string().max(2000).describe("Governance constraints and policies. Max 2000 chars."),
-      }).describe("Design by Contract constraints."),
-      tier: z.enum(["starter", "pro", "enterprise"]).describe("Target output tier. Dictates section inclusion."),
-    }),
+    contract_core: z.object({
+        context: z.string().describe("The background and scope of the task."),
+        role_name: z.string().describe("The name of the AI persona (e.g., 'The Technical Lead')."),
+        role_description: z.string().describe("The expertise and constraints of the persona."),
+        instruction: z.string().describe("The primary goal or action."),
+        specification: z.string().describe("Detailed steps, formats, or logic rules."),
+        performance: z.string().describe("Quantifiable metrics (e.g., 'p95 latency < 50ms').")
+    }).describe("The fundamental task details."),
+    dbc_constraints: z.object({
+        preconditions: z.string().optional().default("").describe("What must be true before execution (Pro+)."),
+        postconditions: z.string().optional().default("").describe("What must be guaranteed after execution (Pro+)."),
+        schema: z.string().optional().default("").describe("Strict JSON schema for output validation (Pro+)."),
+        governance: z.string().optional().default("").describe("Architectural and security compliance rules (Enterprise).")
+    }).describe("Design by Contract enforcements."),
+    tier: z.enum(["starter", "pro", "enterprise"]).describe("The service tier determining which constraints are applied to the final prompt.")
   },
   handleGenerateProductRequirementsPrompt
 );
 
+// Register a utility tool to fetch predefined system roles
+server.tool(
+    "get_available_roles",
+    "Returns a list of predefined AI personas available in the Forge, including their descriptions and operational parameters.",
+    {},
+    async () => {
+        return {
+            content: [{
+                type: "text" as const,
+                text: JSON.stringify(ROLES, null, 2)
+            }]
+        }
+    }
+)
+
+/**
+ * @function main
+ * @description The main entry point for the MCP Server script.
+ * Binds the server to standard input/output (stdio) to communicate with external MCP clients.
+ */
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write("KORSAKOV: stdio transport active. MCP 2025-11-25.\n");
+  console.error("Semantic Contract Forge MCP Server running on stdio");
 }
 
-main().catch((err) => {
-  process.stderr.write(`KORSAKOV: Fatal — ${err.message}\n`);
+main().catch((error) => {
+  console.error("Fatal error in main():", error);
   process.exit(1);
 });
