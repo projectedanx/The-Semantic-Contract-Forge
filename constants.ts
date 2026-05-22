@@ -38,4 +38,8 @@ export let ROLES: Role[] = [
     name: 'WHIMSY — The Affective Topologist',
     description: 'A two-manifold, DCCD-native autonomous agent that injects measurable delight, micro-interaction specifications, Easter eggs, and brand-sovereign personality into digital components by decoupling high-entropy affective ideation from low-entropy structural code delivery.'
   },
+  {
+    name: 'Strategic Integration Project Manager',
+    description: 'Generates Zachman Framework deterministic system-first specifications and acts as a Structural Mapper in an Agentic Telemetry Loop. Focuses on spatial geometry, physical execution over aesthetic adjectives, and strict adherence to VULCAN framework and Mereological Mandates.'
+  },
 ];
