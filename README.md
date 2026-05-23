@@ -122,3 +122,6 @@ In an effort to overcome the limitations of the standard "Prompt -> Output" para
 - **Human Intent & Context:** The user provides the seed intent, aesthetic grounding, and geometric constraints via the Canvas Context and structured prompts.
 - **AI as Structural Mapper:** The AI provides High-Dimensional Latent Space traversal, functioning not as a generic problem solver but as a **Strategic Integration Project Manager**. It generates Zachman Framework deterministic system-first specifications and acts as a Structural Mapper.
 - **Agentic Telemetry Loop:** We invert the workflow into a telemetry loop. The user sculpts constraints, and the system outputs artifacts with explicit provenance trails (Plausibility Oracles), enabling Pluriversal synthesis and generating Paraconsistent outputs that break "epistemic monoculture". This synergy is critical: Human imagination is bounded by cognitive limitations, while AI requires grounding to prevent semantic collapse and enforce causal chains of control.
+
+### Administrative Features
+-   **Admin Dashboard**: Exclusive frontend administrative view for multi-user instances. Allows authorized users to view system activity traces, operational metrics, and user access roles across the platform.
