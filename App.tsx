@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import Header from './components/Header';
+import AdminDashboard from './components/AdminDashboard';
 import TierSelector from './components/TierSelector';
 import PromptEditor from './components/PromptEditor';
 import GeneratedPrompt from './components/GeneratedPrompt';
@@ -63,6 +64,8 @@ const INITIAL_PROMPT_DATA: PromptData = {
 export interface AppContextType {
   /** Callback to open the global Template Library modal. */
   onOpenTemplateLibrary: () => void;
+  /** Callback to toggle the global Admin Dashboard. */
+  onToggleAdmin: () => void;
 }
 
 /**
@@ -84,6 +87,7 @@ function App() {
   const [userError, setUserError] = useState<string | null>(null);
   const [activeContract, setActiveContract] = useState<SavedPromptContract | null>(null);
   const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [roles, setRoles] = useState<Role[]>(ROLES);
 
   // Bring Your Own Key (BYOK) state initialization from local storage
@@ -244,7 +248,8 @@ function App() {
   
   const contextValue = useMemo(() => ({
     onOpenTemplateLibrary: () => setIsTemplateLibraryOpen(true),
-  }), []);
+      onToggleAdmin: () => setIsAdminMode(prev => !prev),
+}), []);
 
   return (
     <AppContext.Provider value={contextValue}>
@@ -260,52 +265,60 @@ function App() {
             onSaveTemplate={handleSaveTemplate}
         />
 
+
         <main className="container mx-auto px-4 py-8">
-            <div className="mb-8 p-4 bg-slate-800/50 border border-slate-700 rounded-lg flex items-center justify-between">
-                <div className="flex-grow max-w-xl">
-                    <label htmlFor="apiKey" className="block text-sm font-semibold text-slate-300 mb-1">Google Gemini API Key (BYOK)</label>
-                    <input
-                        type="password"
-                        id="apiKey"
-                        value={apiKey}
-                        onChange={(e) => handleApiKeyChange(e.target.value)}
-                        placeholder="AIzaSy..."
-                        className="w-full p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition font-mono text-sm"
-                    />
-                    <p className="text-xs text-slate-500 mt-1">Your key is stored locally in your browser and never sent to our servers.</p>
+            {isAdminMode ? (
+              <AdminDashboard />
+            ) : (
+              <>
+                <div className="mb-8 p-4 bg-slate-800/50 border border-slate-700 rounded-lg flex items-center justify-between">
+                    <div className="flex-grow max-w-xl">
+                        <label htmlFor="apiKey" className="block text-sm font-semibold text-slate-300 mb-1">Google Gemini API Key (BYOK)</label>
+                        <input
+                            type="password"
+                            id="apiKey"
+                            value={apiKey}
+                            onChange={(e) => handleApiKeyChange(e.target.value)}
+                            placeholder="AIzaSy..."
+                            className="w-full p-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition font-mono text-sm"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Your key is stored locally in your browser and never sent to our servers.</p>
+                    </div>
                 </div>
-            </div>
 
-            <div className="mb-12">
-            <h2 className="text-xl font-bold mb-4 text-slate-100 border-b border-slate-700 pb-2">Select Tier & Features</h2>
-            <TierSelector currentTier={currentTier} setTier={setCurrentTier} />
-            </div>
+                <div className="mb-12">
+                <h2 className="text-xl font-bold mb-4 text-slate-100 border-b border-slate-700 pb-2">Select Tier & Features</h2>
+                <TierSelector currentTier={currentTier} setTier={setCurrentTier} />
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div>
-                <PromptEditor
-                    promptData={promptData}
-                    setPromptData={setPromptData}
-                    currentTier={currentTier}
-                    roles={roles}
-                    onRoleGenerated={(newRole) => setRoles(prev => [...prev, newRole])}
-                    apiKey={apiKey}
-                />
-            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <PromptEditor
+                        promptData={promptData}
+                        setPromptData={setPromptData}
+                        currentTier={currentTier}
+                        roles={roles}
+                        onRoleGenerated={(newRole) => setRoles(prev => [...prev, newRole])}
+                        apiKey={apiKey}
+                    />
+                </div>
 
-            <div>
-                <GeneratedPrompt
-                    promptData={promptData}
-                    apiKey={apiKey}
-                    promptText={generatedPromptText}
-                    onValidate={handleValidate}
-                    isLoading={isLoading}
-                    validationResult={validationResult}
-                    tier={currentTier}
-                />
-            </div>
-            </div>
+                <div>
+                    <GeneratedPrompt
+                        promptData={promptData}
+                        apiKey={apiKey}
+                        promptText={generatedPromptText}
+                        onValidate={handleValidate}
+                        isLoading={isLoading}
+                        validationResult={validationResult}
+                        tier={currentTier}
+                    />
+                </div>
+                </div>
+              </>
+            )}
         </main>
+
 
         <TemplateLibraryModal
             isOpen={isTemplateLibraryOpen}

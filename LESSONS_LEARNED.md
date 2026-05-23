@@ -28,3 +28,8 @@ By enforcing a strict prohibition on the `any` type across the entire repository
 Through the implementation of the META_ARCHITECT_INTELLIGENCE_PROJECT_AURELIUS initiative, we recognized a critical failure mode in current AI interactions: relying on the AI to act as an "auto-solver." This leads to epistemic monoculture and semantic collapse when faced with complex architectural geometries.
 We learned that the solution is **Agentic Inversion**. By integrating the "Strategic Integration Project Manager" persona, the system shifts from "solving" to "structural mapping."
 This shift provides immense value through **Paraconsistent Mapping**—the ability to hold multiple, potentially contradictory structural hypotheses in latent space without forcing premature resolution. The human provides the aesthetic and ethical grounding via geometric constraints, while the AI performs the high-dimensional mapping to generate deterministic specifications (e.g., Zachman Framework). This ensures that structural execution remains grounded in human intent while leveraging the AI's capacity for pluriversal synthesis.
+
+### Multi-User Administrative Context Implementation
+When designing the administrative frontend for the Semantic Contract Forge:
+- Implementing an `isAdminMode` toggle context within `App.tsx` allows for seamless transition between authoring constraints and monitoring system metrics, avoiding immediate needs for complex routing configurations.
+- Mocking structural metadata (`UserInstance`, `AdminMetrics`) establishes strict type interfaces ahead of backend integration, ensuring that component architecture adheres to the VULCAN framework's zero-`any` tolerance policy.

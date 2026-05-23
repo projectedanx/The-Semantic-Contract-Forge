@@ -132,3 +132,35 @@ export type SynergyResult =
       /** A descriptive error message detailing why the analysis failed. */
       error: string;
     };
+
+/**
+ * Represents an administrative user instance for the multi-user dashboard.
+ */
+export interface UserInstance {
+  /** The unique identifier of the user. */
+  id: string;
+  /** The email address of the user. */
+  email: string;
+  /** The administrative role of the user. */
+  role: 'admin' | 'user';
+  /** The subscribed tier of the user. */
+  tier: Tier;
+  /** The current account status. */
+  status: 'active' | 'inactive';
+  /** The last login timestamp. */
+  lastLogin: string;
+}
+
+/**
+ * Represents system metrics for the administrative dashboard.
+ */
+export interface AdminMetrics {
+  /** The number of currently active user instances. */
+  activeInstances: number;
+  /** Total queries processed in the last 24 hours. */
+  totalQueries24h: number;
+  /** Average response latency in milliseconds. */
+  avgLatencyMs: number;
+  /** System error rate as a decimal (e.g., 0.012 for 1.2%). */
+  errorRate: number;
+}
