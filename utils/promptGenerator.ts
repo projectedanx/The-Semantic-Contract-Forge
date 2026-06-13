@@ -15,6 +15,25 @@ const BANNED_TOKENS = [
 ];
 
 /**
+ * Generates a cryptographically secure uppercase alphanumeric identifier.
+ *
+ * @param {number} length - Desired identifier length.
+ * @returns {string} Secure random identifier.
+ */
+function generateSecureId(length: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+
+  let id = '';
+  for (let i = 0; i < length; i++) {
+    id += alphabet[bytes[i] % alphabet.length];
+  }
+
+  return id;
+}
+
+/**
  * Scans the provided prompt data for banned evaluative adjectives.
  * Part of the VIPER subsystem's Adjectival L2 Bounding.
  *
@@ -64,7 +83,7 @@ function checkHGI(data: PromptData): boolean {
  */
 function formatDiagnostic(rejectedTokens: string[], hgiCompliant: boolean): string {
   let diagnostic = `**[DIAGNOSTIC // VIPER-GAFFER v2026.4]**\n`;
-  diagnostic += `Session_ID: VPR-${Math.random().toString(36).substring(2, 9).toUpperCase()}\n`;
+  diagnostic += `Session_ID: VPR-${generateSecureId(7)}\n`;
   diagnostic += `Scar_Archive_Active: true\n`;
 
   if (rejectedTokens.length > 0) {
@@ -113,7 +132,7 @@ function generateVIPEROSM(data: PromptData, tierLevel: number): string {
   let osm = `**[OPTICAL STATE MATRIX // NANO BANANA 2 TARGET]**\n`;
   osm += `\`\`\`json\n`;
   osm += `{\n`;
-  osm += `  "OSM_ID": "OSM-${Math.random().toString(36).substring(2, 9).toUpperCase()}",\n`;
+  osm += `  "OSM_ID": "OSM-${generateSecureId(7)}",\n`;
   osm += `  "PDL_Decorators": [\n    "${decorators.join('",\n    "')}"\n  ],\n`;
   osm += `  "Base_Syntax": "${data.specification.replace(/\n/g, ' ')}",\n`;
   osm += `  "Negative_Space_Topology": "No aesthetic negations. Spatial exclusions only.",\n`;
