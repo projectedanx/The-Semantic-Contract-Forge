@@ -47,3 +47,9 @@ When designing the administrative frontend for the Semantic Contract Forge:
 - *Interpretive Fracture* is mathematically halted by enforcing **Datum Reference Frames** in `AGENTS.md`.
 - We successfully shifted from narrative user stories to Zachman Framework-aligned **Structural Profiles**.
 - This entire repository acts as the **Epistemic Transducer**, enforcing deterministic bounds on stochastic inputs while retaining deep socio-technical and emotional human context.
+
+## The Qualitative Experience Database (QED) and Epistemic Workbenches
+We have learned that naive collections of unstructured markdown files are insufficient for high-integrity RAG systems. Instead, personal qualitative databases must be architected as **Epistemic Workbenches**.
+- **The Necessity of Counterfactual Variance:** Storing only what *worked* leads to compression-induced shortcut hallucinations. We must explicitly document the "Archive of Absence"—what failed to occur or unchosen trajectories—to provide boundaries for generative inference.
+- **Defending the Semantic Firewall:** Naive vector databases are highly vulnerable to Context Poisoning. We learned to intercept queries using a **Semantic Firewall** combined with a **Semantic Drift Monitor Agent (SDMA)**. By monitoring Topological Data Analysis (TDA) metrics, we can quantify semantic drift. If this drift exceeds a safe threshold, the **Epistemic Escrow Circuit Breaker** must trip, enforcing human-in-the-loop review.
+- **Healing via Algorithmic Kintsugi:** RAG failures should not be silently discarded. By converting these failures into "Symbolic Scars" within a Scar Tissue Archive, we can use Failure-Informed Prompt Inversion (FIPI) to organically immunize the database against recurring semantic pathogens.

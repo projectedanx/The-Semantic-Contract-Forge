@@ -98,3 +98,20 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
     -   Track the influence of specific training biases and use "Attribution Amplification" to explicitly suppress incorrect visual correlations in favor of user-defined geometry.
 -   **Cross-Modal Perceptual Fusion Prototype:**
     -   Lay groundwork for specifying materials via spectral reflectance rather than RGB.
+
+---
+
+### 🔮 Phase 5: Qualitative Experience Integration
+
+*Goal: Elevate the SCF from a prompt generator to an Epistemic Workbench powered by a Qualitative Experience Database (QED).*
+
+-   **Semantic-Relational Domain Lifting (SRDL):**
+    -   Implement automated translation of raw markdown/logs into the Minimal Explainability Metadata Schema (MEMS).
+-   **Semantic Drift Monitor Agent (SDMA):**
+    -   Integrate real-time Topological Data Analysis to compute Semantic Drift Scores during retrieval.
+-   **Epistemic Escrow Automation:**
+    -   Build UI workflows for human-in-the-loop resolution when the CFDI circuit breaker trips.
+-   **Algorithmic Kintsugi Pipeline:**
+    -   Automate the creation of "Symbolic Scars" from RAG retrieval failures.
+-   **Decolonial Prompt Scaffolding Modules:**
+    -   Add built-in Pluriversal Resonance Filters to counter algorithmic biases in specialized generation tasks.

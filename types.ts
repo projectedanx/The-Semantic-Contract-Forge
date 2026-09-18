@@ -181,3 +181,40 @@ export interface AdminMetrics {
   /** System error rate as a decimal (e.g., 0.012 for 1.2%). */
   errorRate: number;
 }
+
+/**
+ * Represents the Minimal Explainability Metadata Schema (MEMS) for Qualitative Ingestion.
+ * A structured, version-controlled, and cryptographically verifiable repository designed
+ * to compile "lived experience" into highly grounded, drift-resistant context payloads.
+ */
+export interface QualitativeExperienceNode {
+  /** A unique identifier for the node matching pattern "^QEN-{8}-[a-f0-9]{4}$". */
+  node_id: string;
+  /** ISO 8601 date-time string anchoring the experience. */
+  temporal_anchor: string;
+  /** The payload containing the raw lived experience and counterfactuals. */
+  qualitative_payload: {
+    /** The type of the experience recorded. */
+    experience_type: 'Direct_Trial' | 'Failure_Incident' | 'Socratic_Review';
+    /** Unfiltered, jargon-free log of the qualitative phenomenon. */
+    raw_observation: string;
+    /** What failed to occur, documenting unchosen trajectories. */
+    counterfactual_variance: string;
+  };
+  /** Indicators tracking sensory perturbation and structural variations. */
+  sensory_causal_indicators: {
+    /** A numeric index from 0 to 10. */
+    causal_perturbation_index: number;
+    /** A numeric value from 0 to 1. */
+    structural_roughness: number;
+  };
+  /** Explicit links to baseline semantic genome schemas. */
+  ontological_alignments: string[];
+  /** Cryptographic attestation of the creator's identity. */
+  cryptographic_provenance: {
+    /** Decentralized Identifier of the agent/creator. */
+    agent_did: string;
+    /** Verifiable signature securing the payload. */
+    verifiable_signature: string;
+  };
+}
