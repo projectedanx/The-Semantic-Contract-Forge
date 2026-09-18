@@ -14,10 +14,7 @@ describe('RoleGenerator', () => {
 
     const dummyRole: Role = {
         name: "Test Pirate",
-        description: "A funny test pirate.",
-        tone: "Humorous",
-        expertise: ["Piracy", "Jokes"],
-        restrictions: ["No swearing"]
+        description: "A funny test pirate."
     };
 
     afterEach(() => {

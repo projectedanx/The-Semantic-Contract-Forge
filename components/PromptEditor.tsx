@@ -3,6 +3,8 @@ import { PromptData, Tier, Role } from '../types';
 import { SparklesIcon } from './icons/SparklesIcon';
 import RoleGenerator from './RoleGenerator';
 import SchemaSynthesizer from './SchemaSynthesizer';
+import GeometricEditor from './GeometricEditor';
+import { usePlausibilityLoop } from '../hooks/usePlausibilityLoop';
 import { generateRole } from '../services/geminiService';
 
 /**
@@ -104,9 +106,35 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
   const isEnterprise = currentTier === 'enterprise';
   const [isRoleGeneratorVisible, setRoleGeneratorVisible] = useState(false);
 
+  const {
+    isOptimizing,
+    optimizationIterations,
+    plausibilityScore,
+    runOptimization
+  } = usePlausibilityLoop({ promptData, setPromptData, apiKey });
+
+
   return (
     <div className="space-y-6 bg-slate-800/30 p-6 rounded-lg border border-slate-700">
-      <h2 className="text-2xl font-bold text-amber-300 border-b border-amber-300/20 pb-2">Prompt Contract Editor</h2>
+      <div className="flex items-center justify-between border-b border-amber-300/20 pb-2">
+        <h2 className="text-2xl font-bold text-amber-300">Prompt Contract Editor</h2>
+        {isEnterprise && (
+          <div className="flex items-center gap-4">
+            {plausibilityScore !== null && (
+              <span className={`text-sm font-semibold ${plausibilityScore >= 80 ? 'text-green-400' : 'text-amber-400'}`}>
+                Plausibility Score: {plausibilityScore}
+              </span>
+            )}
+            <button
+              onClick={runOptimization}
+              disabled={!apiKey || isOptimizing}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 text-white rounded-md transition font-semibold flex items-center gap-2"
+            >
+              {isOptimizing ? `Optimizing (Iter ${optimizationIterations})...` : 'Run Oracle Optimization'}
+            </button>
+          </div>
+        )}
+      </div>
 
       <Section title="Context" description="Set the background and scope for the AI.">
         <TextArea name="context" value={promptData.context} onChange={handleChange} placeholder="e.g., You are building a component for an e-commerce dashboard..." />
@@ -171,6 +199,14 @@ const PromptEditor: React.FC<PromptEditorProps> = ({ promptData, setPromptData, 
 
       <Section title="Governance [ENTERPRISE]" description="High-level rules, compliance, and architectural boundaries." isLocked={!isEnterprise}>
         <TextArea name="governance" value={promptData.governance} onChange={handleChange} disabled={!isEnterprise} placeholder="e.g., Must adhere to the VULCAN framework and prevent cross-domain state mutation calls." />
+      </Section>
+
+      <Section title="Geometric Matrix Constraints [ENTERPRISE]" description="Non-Euclidean Latent Space Navigation (Project Aurelius)" isLocked={!isEnterprise}>
+        <GeometricEditor
+          constraints={promptData.geometryMatrix}
+          onChange={(constraints) => setPromptData(prev => ({ ...prev, geometryMatrix: constraints }))}
+          disabled={!isEnterprise}
+        />
       </Section>
     </div>
   );

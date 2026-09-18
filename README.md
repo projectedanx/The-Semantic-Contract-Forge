@@ -175,3 +175,8 @@ sequenceDiagram
 - **Location:** `utils/validation.ts`
 - **Developer Sub-Culture:** Stemming from the "Mereological Mandate" in `AGENTS.md` - an explicit rejection of the `any` type in favor of rigorous Discriminated Union guarding.
 - **Preservation Decision:** [CULTURAL_ARTIFACT — Strict typological assertions over flexible dynamic access, enforced architecturally].
+
+## Project Aurelius (Meta-Architect Intelligence)
+
+- **Geometric Cognition (Non-Euclidean API):** Encodes geometric constraints (e.g., Hyperbolic/Spherical curvature, coordinate systems) to steer models toward spatial rigor using the `geometryMatrix` data model extension in PromptContracts.
+- **Agentic Auto-Optimization (Plausibility Oracle):** An autonomous execution loop (`usePlausibilityLoop`) that verifies physical consistency using Gemini acting as a proxy physics engine, correcting constraints recursively to hit specific logic thresholds.

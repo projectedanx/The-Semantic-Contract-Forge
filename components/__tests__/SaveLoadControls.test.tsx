@@ -19,36 +19,25 @@ describe('SaveLoadControls', () => {
     const mockPromptData: PromptData = {
         context: 'test context',
         role: { name: 'test role', description: 'test description' },
-        task: 'test task',
-        format: {
-            outputType: 'JSON',
-            schema: 'test schema',
-            instructions: 'test instructions'
-        },
-        constraints: ['test constraint'],
-        examples: [],
-        metadata: {
-            tier: 'starter',
-            targetModel: 'test model'
-        }
+        instruction: 'test instruction',
+        specification: 'test spec',
+        performance: 'test perf',
+        preconditions: 'test pre',
+        postconditions: 'test post',
+        schema: 'test schema',
+        governance: 'test gov'
     };
 
     const mockContracts: SavedPromptContract[] = [
         {
+            ...mockPromptData,
             id: 'contract-1',
-            name: 'Test Contract 1',
-            version: 1,
-            data: mockPromptData,
-            createdAt: '2023-01-01T00:00:00Z',
-            updatedAt: '2023-01-01T00:00:00Z'
+            name: 'Test Contract 1'
         },
         {
+            ...mockPromptData,
             id: 'contract-2',
-            name: 'Test Contract 2',
-            version: 1,
-            data: mockPromptData,
-            createdAt: '2023-01-02T00:00:00Z',
-            updatedAt: '2023-01-02T00:00:00Z'
+            name: 'Test Contract 2'
         }
     ];
 
