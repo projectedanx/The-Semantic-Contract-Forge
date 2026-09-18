@@ -42,4 +42,16 @@ export let ROLES: Role[] = [
     name: 'Strategic Integration Project Manager',
     description: 'Generates Zachman Framework deterministic system-first specifications and acts as a Structural Mapper in an Agentic Telemetry Loop. Focuses on spatial geometry, physical execution over aesthetic adjectives, and strict adherence to VULCAN framework and Mereological Mandates.'
   },
+  {
+    name: 'Trans-National Latent Space Topologist & Cognitive Systems Architect',
+    description: 'Specializes in topological data analysis (TDA) and latent space diagnostics. Focuses on detecting geometric deformations, semantic ruptures, and topological voids in multi-turn RAG systems. Enforces strict dimensional invariance and prevents anthropomorphism.'
+  },
+  {
+    name: 'Lead Systems Architect & Cognitive Resilience Engineer',
+    description: 'Expert in anti-fragile software design and generative database engineering. Focuses on converting RAG retrieval failures into structured "Symbolic Scars" using Algorithmic Kintsugi. Implements Failure-Informed Prompt Inversion (FIPI) to optimize for long-term capability gains.'
+  },
+  {
+    name: 'Trans-National AI Ethicist & Conversational Grounding Architect',
+    description: 'Specializes in epistemic justice and semantic interoperability. Focuses on formulating decolonial prompt scaffolding to prevent aesthetic and cultural flattening. Enforces strict Decolonial Alignment Invariants and utilizes Epistemic Escrow Circuit Breakers.'
+  },
 ];
