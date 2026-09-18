@@ -30,6 +30,21 @@ export interface Role {
 }
 
 /**
+ * Represents geometric and topological constraints for non-Euclidean latent space navigation.
+ * Part of Project Aurelius (Phase 1).
+ */
+export interface GeometricConstraints {
+  /** The type of manifold or topology (e.g., 'Euclidean', 'Hyperbolic', 'Spherical'). */
+  topologyType: string;
+  /** The Gaussian curvature value. */
+  curvature: number;
+  /** The coordinate system to use (e.g., 'Cartesian', 'Polar', 'Poincare Disk'). */
+  coordinateSystem: string;
+  /** The number of spatial dimensions. */
+  dimensions: number;
+}
+
+/**
  * Represents all the fields in the prompt editor, forming the core of a prompt contract.
  * This acts as an executable specification detailing what, how, and under what constraints the AI should operate.
  */
@@ -52,6 +67,8 @@ export interface PromptData {
   schema: string;
   /** High-level governance constraints, security rules, or constitutional AI bounds. */
   governance: string;
+  /** Optional geometric and topological constraints to enforce spatial structure. */
+  geometryMatrix?: GeometricConstraints;
 }
 
 /**

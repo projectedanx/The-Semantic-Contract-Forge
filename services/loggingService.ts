@@ -27,7 +27,6 @@ class Logger {
    */
   private log(level: LogLevel, message: string, details?: unknown): void {
     const timestamp = new Date().toISOString();
-    // @ts-expect-error - indexing console by string level name
     console[level.toLowerCase()]?.(
       `[${timestamp}] [${level}] ${message}`,
       details ?? ''

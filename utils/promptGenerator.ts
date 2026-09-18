@@ -162,14 +162,15 @@ export function generatePromptText(data: PromptData, tier: Tier): string {
     return generateVIPEROSM(data, tierLevels[tier]);
   }
 
-  const sections: { title: string; content: string; minTier: Tier }[] = [
+const sections: { title: string; content: string; minTier: Tier }[] = [
     { title: 'CONTEXT', content: data.context, minTier: 'starter' },
     {
       title: 'ROLE',
       content:
         data.role.name.trim() === '' && data.role.description.trim() === ''
           ? ''
-          : `You are a "${data.role.name}".\nDescription: ${data.role.description}`,
+          : `You are a "${data.role.name}".
+Description: ${data.role.description}`,
       minTier: 'starter',
     },
     { title: 'INSTRUCTION', content: data.instruction, minTier: 'starter' },
@@ -182,10 +183,21 @@ export function generatePromptText(data: PromptData, tier: Tier): string {
       content:
         data.schema.trim() === ''
           ? ''
-          : `The final output MUST be a valid JSON object that strictly conforms to the following schema:\n${data.schema}`,
+          : `The final output MUST be a valid JSON object that strictly conforms to the following schema:
+${data.schema}`,
       minTier: 'pro',
     },
     { title: 'GOVERNANCE CONSTRAINTS', content: data.governance, minTier: 'enterprise' },
+    {
+      title: 'GEOMETRIC CONSTRAINTS',
+      content: data.geometryMatrix
+        ? `Topology Type: ${data.geometryMatrix.topologyType}
+Coordinate System: ${data.geometryMatrix.coordinateSystem}
+Dimensions: ${data.geometryMatrix.dimensions}
+Gaussian Curvature: ${data.geometryMatrix.curvature}`
+        : '',
+      minTier: 'enterprise'
+    }
   ];
 
   const tierLevels: Record<Tier, number> = { starter: 0, pro: 1, enterprise: 2 };
