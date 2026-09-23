@@ -180,3 +180,23 @@ sequenceDiagram
 
 - **Geometric Cognition (Non-Euclidean API):** Encodes geometric constraints (e.g., Hyperbolic/Spherical curvature, coordinate systems) to steer models toward spatial rigor using the `geometryMatrix` data model extension in PromptContracts.
 - **Agentic Auto-Optimization (Plausibility Oracle):** An autonomous execution loop (`usePlausibilityLoop`) that verifies physical consistency using Gemini acting as a proxy physics engine, correcting constraints recursively to hit specific logic thresholds.
+
+---
+
+## Anomaly Learning Agent (ALA) Guard
+
+> Operational integration for real-time meta-learning and monitoring.
+> Validates behavior against the PROV-AGENT Schema (V2.9 Harness).
+
+The ALA acts as a perceptual engine to flag "grey-zone misuse." It calculates a multi-layered risk score dynamically assessing toolchain entropy and sequential deviations.
+
+### Features
+*   **Neural-Symbolic Synthesis:** Combines semantic sequence evaluation with graph reconstruction auditing.
+*   **Adaptive Thresholds:** Modifies evaluation weights via Human-In-The-Loop (HITL) verdicts (Free Energy homeostasis).
+*   **Gated Execution Checkpoints:** Limits expensive topological checks to high-entropy operations or Affordance Watchlist overrides.
+
+### Operational Parameters
+- Warning Threshold (`τ_warn`): 0.40
+- Breach Threshold (`τ_breach`): 0.80
+- Learning Rate (False Positives): 0.12
+- Learning Rate (True Positives): 0.25
