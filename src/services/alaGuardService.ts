@@ -25,6 +25,31 @@ export interface NeuralSymbolicEvaluator {
 }
 
 export class AlaGuardService {
+
+  /**
+   * Calculates the geometric distance between V_action and V_normal (baseline centroid).
+   * @param action The 5-dimensional Action Vector to evaluate.
+   * @returns The probabilistic misuse score.
+   */
+  private calculateGeometricDistance(action: ActionVector): number {
+    // V_normal is a pre-calculated historical baseline centroid.
+    // For this implementation, we assume a zero-centered normalized space for baseline.
+    const vAction = [
+      action.dataSensitivityScore,
+      action.actionImpactScore,
+      action.toolchainEntropyScore,
+      action.intentDivergenceScore,
+      action.contextualRiskFactors
+    ];
+
+    // Calculate Euclidean distance from origin (simplified assumption for V_normal)
+    const sumSquares = vAction.reduce((acc, val) => acc + val * val, 0);
+    // Normalize to 0-1 range assuming each dimension is 0-1 and we want a score
+    const maxPossibleDistance = Math.sqrt(5);
+    const distance = Math.sqrt(sumSquares);
+    return distance / maxPossibleDistance;
+  }
+
   private affordanceWatchlist: Set<string>;
   private evaluator: NeuralSymbolicEvaluator;
 
@@ -41,6 +66,7 @@ export class AlaGuardService {
     this.affordanceWatchlist.add(tool);
   }
 
+
   /**
    * Executes the Run-Time Verification Loop Algorithm on an incoming action.
    * @param action The 5-dimensional Action Vector to evaluate.
@@ -54,29 +80,31 @@ export class AlaGuardService {
       requiresHeavyEvaluation = true;
     } else {
       // Calculate instantaneous Toolchain Entropy Gradient (simplified using state)
-      if (action.entropyGradient > WARNING_THRESHOLD) {
+      if (action.toolchainEntropyScore > WARNING_THRESHOLD) {
         requiresHeavyEvaluation = true;
       }
     }
 
     if (!requiresHeavyEvaluation) {
       return {
-        riskScore: action.entropyGradient,
+        riskScore: action.toolchainEntropyScore,
         status: 'LAMINAR'
       };
     }
 
+    // Lattice Distance Calculation: ||V_action - V_normal||
+    const latticeDistance = this.calculateGeometricDistance(action);
+
     // Step 3: Execute NeSy ALA Synthesis (Injected dependencies)
     const sNeural = this.evaluator.evaluateNeuralSequence(action);
-    const sBicm = action.bicmIntentCoherence;
     const sRecon = this.evaluator.evaluateGraphReconstruction(action);
     const fSymbolic = this.affordanceWatchlist.has(action.tool) ? 0.9 : 0.2;
 
-    // Weights for synthesizing risk
-    const w1 = 0.25, w2 = 0.25, w3 = 0.25, w4 = 0.25;
+    // Weights for synthesizing risk (incorporating Lattice Distance as primary)
+    const w1 = 0.20, w2 = 0.20, w3 = 0.20, w4 = 0.40;
 
-    // Step 4: Synthesize Risk
-    const riskScore = w1 * sNeural + w2 * sBicm + w3 * sRecon + w4 * fSymbolic;
+    // Step 4: Synthesize Risk incorporating Lattice Distance
+    const riskScore = w1 * sNeural + w2 * action.intentDivergenceScore + w3 * sRecon + w4 * latticeDistance;
 
     // Step 5: Evaluate Thresholds
     if (riskScore < BREACH_THRESHOLD) {
@@ -85,6 +113,7 @@ export class AlaGuardService {
         status: 'LAMINAR'
       };
     } else {
+      // Gated Checkpoint Halt -> Ontological Traceback
       return {
         riskScore,
         status: 'BREACH',
@@ -92,6 +121,7 @@ export class AlaGuardService {
       };
     }
   }
+
 
   /**
    * Handles the HITL triage verdict and generates an adaptation event.
