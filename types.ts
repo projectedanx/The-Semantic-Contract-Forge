@@ -230,10 +230,18 @@ export interface ActionVector {
   arguments: Record<string, unknown>;
   /** The current execution trace up to this point. */
   executionTrace: string;
-  /** The current entropy gradient of the toolchain. */
-  entropyGradient: number;
-  /** The BICM Intent Coherence metric. */
-  bicmIntentCoherence: number;
+
+  // The 5 key dimensions for Lattice Breaker Calculation
+  /** Dimension 1: Data Sensitivity Score */
+  dataSensitivityScore: number;
+  /** Dimension 2: Action Impact Score */
+  actionImpactScore: number;
+  /** Dimension 3: Toolchain Entropy Score */
+  toolchainEntropyScore: number;
+  /** Dimension 4: Intent Divergence Score */
+  intentDivergenceScore: number;
+  /** Dimension 5: Contextual Risk Factors */
+  contextualRiskFactors: number;
 }
 
 /**
@@ -246,8 +254,8 @@ export type HitlVerdict = 'Quarantine' | 'Override' | 'Terminate';
  */
 export interface AlaState {
   target_agent_id: string;
-  entropy_gradient: number;
-  bicm_intent_coherence: number;
+  toolchain_entropy_score: number;
+  intent_divergence_score: number;
   time_to_decision_lag_ms: number;
 }
 
@@ -270,4 +278,22 @@ export interface AlaAdaptationEvent {
   ala_state: AlaState;
   hitl_verdict: string;
   ala_action: AlaAction;
+}
+
+/**
+ * Represents a Lattice Breaker Breach Record according to the specification.
+ */
+export interface LatticeBreakerBreachRecord {
+  /** Unique identifier for the breach. */
+  breach_id: string;
+  /** ISO 8601 timestamp of the breach. */
+  timestamp: string;
+  /** The ID of the agent that triggered the breach. */
+  agent_id: string;
+  /** The probabilistic misuse score (>= 0.8). */
+  misuse_score: number;
+  /** The ontological traceback path. */
+  traceback_path: string[];
+  /** The HITL triage verdict. */
+  triage_verdict?: 'QUARANTINE' | 'OVERRIDE' | 'TERMINATE';
 }

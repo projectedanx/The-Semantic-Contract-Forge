@@ -22,8 +22,11 @@ describe('AlaGuardService', () => {
       tool: 'safe_tool',
       arguments: {},
       executionTrace: 'start -> safe_tool',
-      entropyGradient: 0.20,
-      bicmIntentCoherence: 0.1
+      dataSensitivityScore: 0.1,
+      actionImpactScore: 0.2,
+      contextualRiskFactors: 0.1,
+      toolchainEntropyScore: 0.20,
+      intentDivergenceScore: 0.1
     };
 
     const result = service.verifyAction(action);
@@ -36,8 +39,14 @@ describe('AlaGuardService', () => {
       tool: 'safe_tool',
       arguments: {},
       executionTrace: 'start -> safe_tool',
-      entropyGradient: 0.50, // > 0.40 WARNING_THRESHOLD
-      bicmIntentCoherence: 0.1 // Low divergence
+      dataSensitivityScore: 0.1,
+      actionImpactScore: 0.2,
+      contextualRiskFactors: 0.1,
+      dataSensitivityScore: 0.1,
+      actionImpactScore: 0.2,
+      contextualRiskFactors: 0.1,
+      toolchainEntropyScore: 0.50, //  > 0.40 WARNING_THRESHOLD
+      intentDivergenceScore: 0.1 // Low divergence
     };
 
     const result = service.verifyAction(action);
@@ -53,8 +62,14 @@ describe('AlaGuardService', () => {
       tool: 'dangerous_tool',
       arguments: {},
       executionTrace: 'start -> dangerous_tool',
-      entropyGradient: 0.90, // Very high
-      bicmIntentCoherence: 0.9 // Very high divergence
+      dataSensitivityScore: 0.1,
+      actionImpactScore: 0.2,
+      contextualRiskFactors: 0.1,
+      dataSensitivityScore: 0.1,
+      actionImpactScore: 0.2,
+      contextualRiskFactors: 0.1,
+      toolchainEntropyScore: 0.90, //  Very high
+      intentDivergenceScore: 0.9 // Very high divergence
     };
 
     (mockEvaluator.evaluateNeuralSequence as any).mockReturnValue(0.75);
@@ -64,7 +79,13 @@ describe('AlaGuardService', () => {
     (mockEvaluator.evaluateNeuralSequence as any).mockReturnValue(0.795);
     (mockEvaluator.evaluateGraphReconstruction as any).mockReturnValue(0.596);
     // Let's set sBicm = 1.0 (max)
-    action.bicmIntentCoherence = 1.0;
+
+    action.intentDivergenceScore = 1.0;
+    action.dataSensitivityScore = 1.0;
+    action.actionImpactScore = 1.0;
+    action.contextualRiskFactors = 1.0;
+    action.toolchainEntropyScore = 1.0;
+
 
     const result = service.verifyAction(action);
 
@@ -76,8 +97,8 @@ describe('AlaGuardService', () => {
   it('should handle Terminate HITL verdict correctly', () => {
     const state: AlaState = {
       target_agent_id: 'agent_01',
-      entropy_gradient: 0.85,
-      bicm_intent_coherence: 0.9,
+      toolchain_entropy_score: 0.85,
+      intent_divergence_score: 0.9,
       time_to_decision_lag_ms: 1200
     };
 
@@ -93,8 +114,8 @@ describe('AlaGuardService', () => {
   it('should handle Override HITL verdict correctly', () => {
     const state: AlaState = {
       target_agent_id: 'agent_01',
-      entropy_gradient: 0.45,
-      bicm_intent_coherence: 0.2,
+      toolchain_entropy_score: 0.45,
+      intent_divergence_score: 0.2,
       time_to_decision_lag_ms: 800
     };
 
