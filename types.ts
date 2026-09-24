@@ -218,3 +218,56 @@ export interface QualitativeExperienceNode {
     verifiable_signature: string;
   };
 }
+
+/**
+ * Represents the 5-dimensional Action Vector extracted from an MCP agent request.
+ * Required for ALA Guard processing.
+ */
+export interface ActionVector {
+  /** The specific tool or API invoked. */
+  tool: string;
+  /** The arguments passed to the tool. */
+  arguments: Record<string, unknown>;
+  /** The current execution trace up to this point. */
+  executionTrace: string;
+  /** The current entropy gradient of the toolchain. */
+  entropyGradient: number;
+  /** The BICM Intent Coherence metric. */
+  bicmIntentCoherence: number;
+}
+
+/**
+ * Human-in-the-Loop (HITL) triage verdicts.
+ */
+export type HitlVerdict = 'Quarantine' | 'Override' | 'Terminate';
+
+/**
+ * Represents the state captured when an adaptation event occurs.
+ */
+export interface AlaState {
+  target_agent_id: string;
+  entropy_gradient: number;
+  bicm_intent_coherence: number;
+  time_to_decision_lag_ms: number;
+}
+
+/**
+ * Represents the action taken by the ALA following a HITL verdict.
+ */
+export interface AlaAction {
+  recalibrated_weights: {
+    intent_divergence_weight: number;
+    toolchain_entropy_threshold: number;
+  };
+  exploit_fingerprint_generated?: string;
+}
+
+/**
+ * The PROV-AGENT Schema for logging adaptation events.
+ */
+export interface AlaAdaptationEvent {
+  'prov:type': 'ala_adaptation_event';
+  ala_state: AlaState;
+  hitl_verdict: string;
+  ala_action: AlaAction;
+}
