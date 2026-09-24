@@ -297,3 +297,52 @@ export interface LatticeBreakerBreachRecord {
   /** The HITL triage verdict. */
   triage_verdict?: 'QUARANTINE' | 'OVERRIDE' | 'TERMINATE';
 }
+
+/**
+ * Represents a discrete causal state in the Temporal Blending Engine (TBE).
+ * A valuation vector over a finite set of Boolean fluents.
+ */
+export interface CausalState {
+  [fluent: string]: number; // 0 or 1
+}
+
+/**
+ * Represents a causal transition action in the TBE.
+ */
+export interface CausalAction {
+  id: string;
+  /** Partial valuation over fluents that must be satisfied for the action to fire */
+  preconditions: Partial<CausalState>;
+  /** Partial valuation over fluents defining deterministic changes */
+  effects: Partial<CausalState>;
+}
+
+/**
+ * Represents a trace of alternating states and actions.
+ * Length N implies N states and N-1 actions: (s_1, a_1, s_2, a_2, ..., a_{N-1}, s_N)
+ */
+export interface CausalTrace {
+  states: CausalState[];
+  actions: CausalAction[];
+}
+
+/**
+ * Result of a System Assurance Agent (SAA) evaluation.
+ */
+export interface SAAEvaluationResult {
+  /** The calculated Causal Path Integrity (CPI) score */
+  cpiScore: number;
+  /** True if CPI >= 0.95 */
+  passed: boolean;
+  /** Details of any logical contradictions found */
+  contradictions: string[];
+}
+
+/**
+ * Output of the Temporal Blending Engine.
+ */
+export interface TBEOutput {
+  status: 'RELEASE' | 'EPISTEMIC_ESCROW';
+  trace: CausalTrace;
+  evaluation: SAAEvaluationResult;
+}
