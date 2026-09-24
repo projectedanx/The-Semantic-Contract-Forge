@@ -115,3 +115,16 @@ This document outlines the high-level strategic roadmap for the SCF project. It 
     -   Automate the creation of "Symbolic Scars" from RAG retrieval failures.
 -   **Decolonial Prompt Scaffolding Modules:**
     -   Add built-in Pluriversal Resonance Filters to counter algorithmic biases in specialized generation tasks.
+
+### 🛡️ Phase 6: Invariant Verification Harness (IVH)
+
+*Goal: Programmatically mine, formalize, and stress-test candidate scientific laws using an automated reasoning architecture.*
+
+-   **Automated Discovery and Anomaly Mining:**
+    -   Continuously screen empirical data streams for structural anomalies exceeding 3-sigma prediction thresholds.
+-   **Isomorphic Formalization:**
+    -   Translate mined regularities from qualitative natural language into strongly typed mathematical schemas and coordinate-free tensors.
+-   **Parametric Trade-off Modeling:**
+    -   Utilize Bayesian Model Selection to balance descriptive simplicity against empirical accuracy, penalizing epicyclic over-fitting.
+-   **Continuous Falsification and Edge-Case Stress Testing:**
+    -   Execute asymptotic bounding analysis, evaluating compiled laws at extreme limits to identify structural breakdown points and trigger automated "model breaking" routines.
